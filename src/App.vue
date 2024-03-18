@@ -33,17 +33,18 @@
         <div style="width: 99%;">
 
 
-          <div v-for="(task, index) in tasklist" :key="index" class="textarea2button_container">
+          <div v-for="(task, taskIndex) in tasklist" :key="taskIndex" class="textarea2button_container">
             <el-card style="min-width: 480px">
 
               <template #header>
                 <div class="card-header">
-                  <span style="margin-right: 1rem;">任务{{ index + 1 }}</span>
+                  <span style="margin-right: 1rem;">任务{{ taskIndex + 1 }}</span>
+                  <div v-hide="taskIndex == 0" style="display: inline-block;">
+                    <el-tooltip class="box-item" effect="dark" content="移除这一整个任务" placement="top">
+                      <el-button type="danger" plain @click="removechild(task, tasklist)" :icon="Minus"></el-button>
 
-                  <el-tooltip class="box-item" effect="dark" content="移除这一整个任务" placement="top">
-                    <el-button type="danger" plain @click="removechild(task, tasklist)" :icon="Minus"></el-button>
-
-                  </el-tooltip>
+                    </el-tooltip>
+                  </div>
                 </div>
               </template>
               <el-form :model="task" label-width="auto" style="max-width: 100%">
@@ -72,7 +73,7 @@
                           --el-switch-on-color: #13ce66;
                           --el-switch-off-color: #409eff;
                         " :active-value="true" :inactive-value="false" active-text="拼接" inactive-text="完整"
-                            @click="task.prompts.data = []" />
+                            @click="task.prompts.data = (task.prompts.splice ? [['']] : [''])" />
                         </el-tooltip>
                       </el-form-item>
                       <el-form-item v-if="task.prompts.splice" label="抽取顺序：">
@@ -87,32 +88,38 @@
                         </el-tooltip>
                       </el-form-item>
                       <el-form-item v-if="task.prompts.splice" label="提示词片段组：">
-                        <div v-for="(prompts_group, index) in task.prompts.data" style="width: 90%"
+                        <div v-for="(prompts_group, index) in task.prompts.data" style="width: 100%;"
                           class="textarea2button_container">
                           <el-card>
                             <div v-for="(prompt, index) in prompts_group" class="textarea2button_container">
                               <el-input v-model="prompts_group[index]" :autosize="{ minRows: 2, maxRows: 4 }"
                                 type="textarea" placeholder="提示词片段" />
-                              <el-button type="danger" plain @click="removechild(prompt, prompts_group)"
-                                :icon="Minus"></el-button>
+                              <div v-hide="index == 0">
+                                <el-button type="danger" plain @click="removechild(prompt, prompts_group)"
+                                  :icon="Minus"></el-button>
+                              </div>
                             </div>
 
                             <el-button type="primary" @click="addPromptSplice(prompts_group)"
                               :style="{ display: 'block' }" :icon="ArrowDownBold"></el-button>
                           </el-card>
-                          <el-button type="danger" plain @click="removechild(prompts_group, task.prompts.data)"
-                            :icon="Minus"></el-button>
+                          <div v-hide="index == 0">
+                            <el-button type="danger" plain @click="removechild(prompts_group, task.prompts.data)"
+                              :icon="Minus"></el-button>
+                          </div>
                         </div>
                         <el-button type="primary" @click="addPromptGroup(task.prompts.data)" :icon="ArrowDownBold"
                           :style="{ width: '100%', display: 'block' }"></el-button>
                       </el-form-item>
                       <el-form-item v-if="!task.prompts.splice" label="完整提示词组：">
-                        <el-card style="display: inline-block; width: 90%">
+                        <el-card style="display: inline-block; width: 100%">
                           <div v-for="(prompt, index) in task.prompts.data" class="textarea2button_container">
                             <el-input v-model="task.prompts.data[index]" :autosize="{ minRows: 2, maxRows: 4 }"
                               type="textarea" placeholder="输入完整的提示词" />
-                            <el-button type="danger" plain @click="removechild(prompt, task.prompts.data)"
-                              :icon="Minus"></el-button>
+                            <div v-hide="index == 0">
+                              <el-button type="danger" plain @click="removechild(prompt, task.prompts.data)"
+                                :icon="Minus"></el-button>
+                            </div>
                           </div>
                           <el-button type="primary" @click="addPrompt(task.prompts.data)" :icon="ArrowDownBold"
                             :style="{ width: '100%' }"></el-button>
@@ -129,8 +136,10 @@
                           <div v-for="(uprompt, index) in task.uprompts.data" class="textarea2button_container">
                             <el-input v-model="task.uprompts.data[index]" :autosize="{ minRows: 2, maxRows: 4 }"
                               type="textarea" placeholder="输入完整的提示词" />
-                            <el-button type="danger" plain @click="removechild(uprompt, task.uprompts.data)"
-                              :icon="Minus"></el-button>
+                            <div v-hide="index == 0">
+                              <el-button type="danger" plain @click="removechild(uprompt, task.uprompts.data)"
+                                :icon="Minus"></el-button>
+                            </div>
                           </div>
                           <el-button type="primary" @click="addPromptSplice(task.uprompts.data)"
                             :style="{ width: '100%', display: 'block' }" :icon="ArrowDownBold"></el-button>
@@ -222,10 +231,10 @@ const addTask = () => {
     prompts: {
       splice: false,
       random: false,
-      data: [],
+      data: [""],
     },
     uprompts: {
-      data: [],
+      data: [""],
     },
   });
 };
