@@ -29,7 +29,7 @@
 
     </el-header>
     <el-main>
-      <el-scrollbar height="800px">
+      <el-scrollbar>
         <div style="width: 99%;">
 
 
@@ -48,7 +48,7 @@
                 </div>
               </template>
               <el-form :model="task" label-width="auto" style="max-width: 100%">
-                <el-form-item label="正反向提示词组合方式：">
+                <el-form-item label="提示词组合方式：">
                   <el-tooltip :content="task.random
       ? '随机抽取正反向提示词进行搭配'
       : '从头依次选取反向提示词进行搭配'
@@ -374,9 +374,18 @@ const next = () => {
   margin-bottom: 1rem;
 }
 
+.el-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.el-scrollbar {
+  height: auto;
+}
+
 .el-card {
   margin-bottom: 1rem;
-  min-width: 300px;
   width: 100%;
 }
 

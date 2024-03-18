@@ -11,12 +11,14 @@ appp.mount(
   (() => {
     const app = document.createElement('div');
     app.style.position = 'fixed'
-    app.style.top = '10%'
+    app.style.top = '4vh'
     app.style.zIndex = '999'
     app.style.backgroundColor = 'white'
     app.style.borderRadius = 'var(--el-border-radius-round)'
-    app.style.left = '30%'
-    app.style.width = '1000px'
+    app.style.marginLeft = '50%'
+    app.style.left = '-350px'
+    app.style.width = '700px'
+    app.style.height = '92vh'
     document.body.append(app);
 
     return app;
