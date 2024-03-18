@@ -25,22 +25,7 @@
     />
   </el-tooltip>
 
-  <el-container
-    v-show="panelShow"
-    :style="{
-      boxShadow: 'var(--el-box-shadow-dark)',
-      border: 'var(--el-border-radius-round)',
-      position: 'fixed',
-      top: '4vh',
-      zIndex: '990',
-      backgroundColor: 'white',
-      borderRadius: 'var(--el-border-radius-round)',
-      marginLeft: '50%',
-      left: '-350px',
-      width: '700px',
-      height: '92vh',
-    }"
-  >
+  <el-container v-show="panelShow" :style="{}" class="pluginPanel">
     <el-header>
       <el-menu
         class="el-menu-demo"
@@ -83,7 +68,7 @@
             :key="taskIndex"
             class="textarea2button_container"
           >
-            <el-card style="min-width: 480px">
+            <el-card style="min-width: 600px">
               <template #header>
                 <div class="card-header">
                   <span style="margin-right: 1rem">任务{{ taskIndex + 1 }}</span>
@@ -263,7 +248,7 @@
                   </el-card>
                 </el-form-item>
                 <el-form-item label="反向提示词：">
-                  <el-card style="min-width: 500px">
+                  <el-card>
                     <el-form :model="task" label-width="auto">
                       <el-form-item label="反向提示词：">
                         <el-card style="display: inline-block">
@@ -572,6 +557,34 @@ const next = () => {
   border-radius: 4px;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+}
+.pluginPanel {
+  box-shadow: var(--el-box-shadow-dark);
+  border: var(--el-border-radius-round);
+  position: fixed;
+  top: 4vh;
+  z-index: 990;
+  background-color: white;
+  border-radius: var(--el-border-radius-round);
+  margin-left: 50%;
+  left: -350px;
+  width: 700px;
+  height: 92vh;
+}
+@media screen and (max-width: 700px) {
+  .pluginPanel {
+    box-shadow: var(--el-box-shadow-dark);
+    border: var(--el-border-radius-round);
+    position: fixed;
+    top: 4vh;
+    z-index: 990;
+    background-color: white;
+    border-radius: var(--el-border-radius-round);
+    margin-left: 50%;
+    left: -50%;
+    width: 100%;
+    height: 92vh;
+  }
 }
 </style>
 
