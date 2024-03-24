@@ -10,7 +10,7 @@ appp.directive("hide", (el, binding) => {
 appp.mount(
     (() => {
         const app = document.createElement("div");
-
+        app.style.zIndex = "5000";
         document.body.append(app);
 
         return app;

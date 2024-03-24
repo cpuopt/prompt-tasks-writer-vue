@@ -11,6 +11,7 @@ var insertText = (area, text) => {
     document.execCommand("delete");
     document.execCommand("insertText", false, text);
     area.blur();
+    // area.value = text;
 };
 
 /**
@@ -31,7 +32,7 @@ var click_generate = () => {
  * @param {string} prompt
  * @returns
  */
-var insertPrompt = (prompt) => {
+var insertPrompt = async (prompt) => {
     return new Promise((resolve) => {
         setTimeout(() => {
             let Prompt_button = document.evaluate("//button[text()='Prompt']", document.body, null, 9, null).singleNodeValue;
@@ -40,7 +41,9 @@ var insertPrompt = (prompt) => {
             }
             setTimeout(() => {
                 insertText(document.querySelector("textarea[placeholder='Write your prompt here. Use tags to sculpt your outputs.']"), prompt);
+                // localStorage.setItem("imagegen-prompt", `"${prompt}"`);
             }, opInterval);
+
             resolve();
         }, opInterval);
     });
@@ -51,7 +54,7 @@ var insertPrompt = (prompt) => {
  * @param {string} uprompt
  * @returns
  */
-var insertUndesiredContent = (uprompt) => {
+var insertUndesiredContent = async (uprompt) => {
     return new Promise((resolve) => {
         setTimeout(() => {
             let UndesiredContent_button = document.evaluate("//button[text()='Undesired Content']", document.body, null, 9, null).singleNodeValue;
@@ -60,7 +63,9 @@ var insertUndesiredContent = (uprompt) => {
             }
             setTimeout(() => {
                 insertText(document.querySelector("textarea[placeholder='Write what you want removed from the generation.']"), uprompt);
+                // localStorage.setItem("imagegen-negativeprompt", `"${uprompt}"`);
             }, opInterval);
+
             resolve();
         }, opInterval);
     });
@@ -80,98 +85,101 @@ async function insert(prompt, uprompt, generate) {
     }
 }
 const timeFormat = {
-    timeZone: 'Asia/Shanghai', year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-}
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+};
 const Debug = (...args) => {
-
-    console.debug(`[${new Date().toLocaleDateString('zh-CN', timeFormat)}]`, args)
-
-
-
-}
+    console.debug(`[${new Date().toLocaleDateString("zh-CN", timeFormat)}]`, args);
+};
 
 /**
  * @description 计算笛卡尔积
- * @param {*} arrays 
- * @returns 
+ * @param {*} arrays
+ * @returns
  */
 const cartesianProduct = (arrays) => {
-    return arrays.reduce((a, b) => {
-        return a.map((x) => {
-            return b.map((y) => {
-                return x.concat(y);
-            });
-        }).reduce((a, b) => {
-            return a.concat(b);
-        }, []);
-    }, [[]]);
-}
+    return arrays.reduce(
+        (a, b) => {
+            return a
+                .map((x) => {
+                    return b.map((y) => {
+                        return x.concat(y);
+                    });
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+        },
+        [[]]
+    );
+};
 const randomChild = (list) => {
     return list[Math.floor(Math.random() * list.length)];
-}
+};
 /**
  * @description 生成提示词列表
- * @param {*} tasklist 
- * @returns 
+ * @param {*} tasklist
+ * @returns
  */
 const generate_promptList = (tasklist) => {
-    let TaskpromptGroupList = []
+    let TaskpromptGroupList = [];
 
-    tasklist.forEach(task => {
+    tasklist = tasklist.filter((task) => {
+        return task.activate == true;
+    });
 
-        let promptGroupList = []
+    tasklist.forEach((task) => {
+        let promptGroupList = [];
 
         // 完整正向提示词列表
         let ppromptList = ((prompts) => {
-            let li = []
+            let li = [];
             if (prompts.splice) {
-                cartesianProduct(prompts.data).forEach(element => {
-                    li.push(element.join(','))
+                cartesianProduct(prompts.data).forEach((element) => {
+                    li.push(element.join(","));
                 });
             } else {
-                li = prompts.data
+                li = prompts.data;
             }
             if (prompts.random) {
                 li.sort(() => Math.random() - 0.5);
             }
-            return li
-        })(task.prompts)
+            return li;
+        })(task.prompts);
 
         // 完整反向提示词列表
-        let upromptList = task.uprompts.data
-
-
+        let upromptList = task.uprompts.data;
 
         if (task.random) {
             for (let index = 0; index < task.nums; index++) {
-                promptGroupList.push({ prompt: randomChild(ppromptList), uprompt: randomChild(upromptList) })
+                promptGroupList.push({ prompt: randomChild(ppromptList), uprompt: randomChild(upromptList) });
             }
         } else {
-            cartesianProduct([ppromptList, upromptList]).forEach(element => {
-                promptGroupList.push({ prompt: element[0], uprompt: element[1] })
-            })
-            let pex = task.nums - promptGroupList.length
+            cartesianProduct([ppromptList, upromptList]).forEach((element) => {
+                promptGroupList.push({ prompt: element[0], uprompt: element[1] });
+            });
+            let pex = task.nums - promptGroupList.length;
             if (pex <= 0) {
-                promptGroupList = promptGroupList.slice(0, task.nums)
+                promptGroupList = promptGroupList.slice(0, task.nums);
             } else {
-                let promptGroupListRaw = promptGroupList.concat()
-                let r = Math.floor(pex / promptGroupList.length)
-                let p = pex % promptGroupList.length
+                let promptGroupListRaw = promptGroupList.concat();
+                let r = Math.floor(pex / promptGroupList.length);
+                let p = pex % promptGroupList.length;
                 for (let index = 0; index < r; index++) {
-                    promptGroupList = promptGroupList.concat(promptGroupListRaw)
+                    promptGroupList = promptGroupList.concat(promptGroupListRaw);
                 }
-                promptGroupList = promptGroupList.concat(promptGroupListRaw.slice(0, p))
+                promptGroupList = promptGroupList.concat(promptGroupListRaw.slice(0, p));
             }
         }
-        TaskpromptGroupList = TaskpromptGroupList.concat(promptGroupList)
-    })
+        TaskpromptGroupList = TaskpromptGroupList.concat(promptGroupList);
+    });
 
-    Debug(TaskpromptGroupList)
-    return TaskpromptGroupList
-}
-export { Debug, insert, generate_promptList, timeFormat }
+    Debug(TaskpromptGroupList);
+    return TaskpromptGroupList;
+};
+export { Debug, insert, generate_promptList, timeFormat };
