@@ -68,8 +68,9 @@
             <TransitionGroup name="list" tag="div">
               <div
                 v-for="(task, taskIndex) in tasklist"
-                :key="taskIndex"
+                :key="task.uuid"
                 class="textarea2button_container"
+                style="position: relative"
               >
                 <el-card style="min-width: 600px">
                   <template #header>
@@ -91,8 +92,9 @@
                           <el-button
                             type="danger"
                             plain
+                            style="padding: 8px"
                             @click="removechild(task, tasklist)"
-                            :icon="Minus"
+                            :icon="Delete"
                           ></el-button>
                         </el-tooltip>
                       </div>
@@ -158,7 +160,17 @@
                       </el-tooltip>
                     </el-form-item>
                     <el-form-item label="出图数量：">
-                      <el-input-number v-model="task.nums" :min="1" />
+                      <el-space
+                        :size="10"
+                        :spacer="h(ElDivider, { direction: 'vertical' })"
+                      >
+                        <el-input-number v-model="task.nums" :min="1" />
+                        <el-text class="mx-1" type="success"
+                          >至少
+                          <b>{{ count_task_prompts_num(task) }}</b>
+                          个才能覆盖全部可能的提示词序列</el-text
+                        >
+                      </el-space>
                     </el-form-item>
                     <el-form-item label="正向提示词：">
                       <el-card>
@@ -183,7 +195,9 @@
                                 active-text="拼接"
                                 inactive-text="完整"
                                 @click="
-                                  task.prompts.data = task.prompts.splice ? [['']] : ['']
+                                  task.prompts.data = task.prompts.splice
+                                    ? [PromptsBuilder.newPromptGroup()]
+                                    : [PromptsBuilder.newPromptSplice()]
                                 "
                               />
                             </el-tooltip>
@@ -211,55 +225,191 @@
                             </el-tooltip>
                           </el-form-item>
                           <el-form-item v-if="task.prompts.splice" label="提示词片段组：">
-                            <TransitionGroup name="list" tag="div" style="width: 100%">
-                              <div
-                                v-for="(prompts_group, index) in task.prompts.data"
-                                :key="index"
+                            <VueDraggable
+                              v-model="task.prompts.data"
+                              class="flex flex-col gap-2 p-4 w-300px bg-gray-500/5 rounded"
+                              target=".prompts-groups"
+                              :scroll="true"
+                              :animation="200"
+                              style="width: 100%"
+                              handle=".groups-handle"
+                            >
+                              <TransitionGroup
+                                name="list"
+                                tag="div"
                                 style="width: 100%"
-                                class="textarea2button_container"
+                                class="prompts-groups"
                               >
-                                <el-card>
-                                  <TransitionGroup name="list" tag="div">
-                                    <div
-                                      v-for="(prompt, index) in prompts_group"
-                                      class="textarea2button_container"
-                                      :key="index"
+                                <div
+                                  v-for="(prompts_group, index) in task.prompts.data"
+                                  :key="prompts_group.uuid"
+                                  style="width: 100%; position: relative"
+                                  class="textarea2button_container"
+                                >
+                                  <el-button
+                                    v-show="task.prompts.data.length > 1"
+                                    :icon="DCaret"
+                                    class="groups-handle cursor-move button-small-square"
+                                    size="small"
+                                    style="height: auto"
+                                    link
+                                  />
+                                  <el-card style="padding-right: 0.5rem">
+                                    <VueDraggable
+                                      v-model="prompts_group.data"
+                                      class="flex flex-col gap-2 p-4 w-300px bg-gray-500/5 rounded"
+                                      target=".prompts"
+                                      :scroll="true"
+                                      :animation="200"
+                                      handle=".prompt-handle"
                                     >
-                                      <el-input
-                                        v-model="prompts_group[index]"
-                                        :autosize="{ minRows: 2, maxRows: 4 }"
-                                        type="textarea"
-                                        placeholder="提示词片段"
-                                      />
-                                      <div v-hide="prompts_group.length < 2">
-                                        <el-button
-                                          type="danger"
-                                          plain
-                                          @click="removechild(prompt, prompts_group)"
-                                          :icon="Minus"
-                                        ></el-button>
+                                      <TransitionGroup
+                                        name="list"
+                                        tag="div"
+                                        class="prompts"
+                                      >
+                                        <div
+                                          v-for="(prompt, index) in prompts_group.data"
+                                          class="textarea2button_container"
+                                          :key="prompt.uuid"
+                                          style="position: relative"
+                                        >
+                                          <el-button
+                                            v-show="prompts_group.data.length > 1"
+                                            :icon="DCaret"
+                                            class="prompt-handle cursor-move button-small-square"
+                                            size="small"
+                                            style="height: auto"
+                                            link
+                                          />
+                                          <el-input
+                                            v-model="prompts_group.data[index].data"
+                                            :autosize="{ minRows: 2, maxRows: 4 }"
+                                            type="textarea"
+                                            placeholder="提示词片段"
+                                          />
+                                          <div v-hide="prompts_group.data.length < 2">
+                                            <el-button
+                                              type="danger"
+                                              size="small"
+                                              class="button_rt"
+                                              plain
+                                              @click="
+                                                () => {
+                                                  removechild(prompt, prompts_group.data);
+                                                  prompts_group.choices >
+                                                  prompts_group.data.length
+                                                    ? (prompts_group.choices =
+                                                        prompts_group.data.length)
+                                                    : pass;
+                                                }
+                                              "
+                                              :icon="Delete"
+                                            ></el-button>
+                                          </div>
+                                        </div>
+                                      </TransitionGroup>
+                                    </VueDraggable>
+                                    <div
+                                      style="
+                                        display: flex;
+                                        flex-direction: row;
+                                        line-height: normal;
+                                        justify-content: space-between;
+                                      "
+                                    >
+                                      <el-button
+                                        type="primary"
+                                        size="small"
+                                        @click="addPromptSplice(prompts_group.data)"
+                                        style=""
+                                        :icon="ArrowDownBold"
+                                      ></el-button>
+
+                                      <div>
+                                        <el-space
+                                          :size="10"
+                                          :spacer="
+                                            h(ElDivider, { direction: 'vertical' })
+                                          "
+                                        >
+                                          <div>
+                                            <el-text class="mx-1" size="small"
+                                              >选取</el-text
+                                            >
+                                            <el-input-number
+                                              v-model="prompts_group.choices"
+                                              size="small"
+                                              style="width: 5rem"
+                                              :min="1"
+                                              :max="prompts_group.data.length"
+                                            />
+                                            <el-text class="mx-1" size="small"
+                                              >个</el-text
+                                            >
+                                          </div>
+                                          <el-tooltip
+                                            class="box-item"
+                                            effect="dark"
+                                            content="仅抽取1个tag时，排列和组合没有差别"
+                                            placement="bottom"
+                                            :disabled="prompts_group.choices != 1"
+                                          >
+                                            <el-radio-group
+                                              v-model="prompts_group.type"
+                                              size="small"
+                                              :disabled="prompts_group.choices == 1"
+                                            >
+                                              <el-tooltip
+                                                class="box-item"
+                                                effect="dark"
+                                                :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并排出不同的顺序`"
+                                                placement="bottom"
+                                                :disabled="prompts_group.choices == 1"
+                                              >
+                                                <el-radio-button
+                                                  label="排列"
+                                                  value="permutation"
+                                                />
+                                              </el-tooltip>
+
+                                              <el-tooltip
+                                                class="box-item"
+                                                effect="dark"
+                                                :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并按填入的顺序排列`"
+                                                placement="bottom"
+                                                :disabled="prompts_group.choices == 1"
+                                              >
+                                                <el-radio-button
+                                                  label="组合"
+                                                  value="combination"
+                                                />
+                                              </el-tooltip>
+                                            </el-radio-group>
+                                          </el-tooltip>
+                                        </el-space>
                                       </div>
                                     </div>
-                                  </TransitionGroup>
-                                  <el-button
-                                    type="primary"
-                                    @click="addPromptSplice(prompts_group)"
-                                    :style="{ display: 'block' }"
-                                    :icon="ArrowDownBold"
-                                  ></el-button>
-                                </el-card>
-                                <div v-hide="task.prompts.data.length < 2">
-                                  <el-button
-                                    type="danger"
-                                    plain
-                                    @click="removechild(prompts_group, task.prompts.data)"
-                                    :icon="Minus"
-                                  ></el-button>
+                                  </el-card>
+                                  <div>
+                                    <el-button
+                                      type="danger"
+                                      size="small"
+                                      class="button_rt"
+                                      plain
+                                      :disabled="task.prompts.data.length < 2"
+                                      @click="
+                                        removechild(prompts_group, task.prompts.data)
+                                      "
+                                      :icon="Delete"
+                                    ></el-button>
+                                  </div>
                                 </div>
-                              </div>
-                            </TransitionGroup>
+                              </TransitionGroup>
+                            </VueDraggable>
                             <el-button
                               type="primary"
+                              size="small"
                               @click="addPromptGroup(task.prompts.data)"
                               :icon="ArrowDownBold"
                               :style="{ width: '100%', display: 'block' }"
@@ -269,31 +419,36 @@
                             v-if="!task.prompts.splice"
                             label="完整提示词组："
                           >
-                            <el-card style="display: inline-block; width: 100%">
+                            <el-card style="display: inline-block">
                               <TransitionGroup name="list" tag="div">
                                 <div
                                   v-for="(prompt, index) in task.prompts.data"
                                   class="textarea2button_container"
-                                  :key="index"
+                                  :key="prompt.uuid"
+                                  style="position: relative"
                                 >
                                   <el-input
-                                    v-model="task.prompts.data[index]"
+                                    v-model="task.prompts.data[index].data"
                                     :autosize="{ minRows: 2, maxRows: 4 }"
                                     type="textarea"
                                     placeholder="输入完整的提示词"
                                   />
-                                  <div v-hide="task.prompts.data.length < 2">
+                                  <div>
                                     <el-button
                                       type="danger"
+                                      size="small"
+                                      class="button_rt"
                                       plain
+                                      :disabled="task.prompts.data.length < 2"
                                       @click="removechild(prompt, task.prompts.data)"
-                                      :icon="Minus"
+                                      :icon="Delete"
                                     ></el-button>
                                   </div>
                                 </div>
                               </TransitionGroup>
                               <el-button
                                 type="primary"
+                                size="small"
                                 @click="addPrompt(task.prompts.data)"
                                 :icon="ArrowDownBold"
                                 :style="{ width: '100%' }"
@@ -303,6 +458,7 @@
                         </el-form>
                       </el-card>
                     </el-form-item>
+
                     <el-form-item label="反向提示词：">
                       <el-card>
                         <el-form :model="task" label-width="auto">
@@ -312,26 +468,31 @@
                                 <div
                                   v-for="(uprompt, index) in task.uprompts.data"
                                   class="textarea2button_container"
-                                  :key="index"
+                                  :key="uprompt.uuid"
+                                  style="position: relative"
                                 >
                                   <el-input
-                                    v-model="task.uprompts.data[index]"
+                                    v-model="task.uprompts.data[index].data"
                                     :autosize="{ minRows: 2, maxRows: 4 }"
                                     type="textarea"
                                     placeholder="输入完整的提示词"
                                   />
-                                  <div v-hide="task.uprompts.data.length < 2">
+                                  <div>
                                     <el-button
                                       type="danger"
+                                      size="small"
+                                      class="button_rt"
                                       plain
                                       @click="removechild(uprompt, task.uprompts.data)"
-                                      :icon="Minus"
+                                      :disabled="task.uprompts.data.length < 2"
+                                      :icon="Delete"
                                     ></el-button>
                                   </div>
                                 </div>
                               </TransitionGroup>
                               <el-button
                                 type="primary"
+                                size="small"
                                 @click="addPromptSplice(task.uprompts.data)"
                                 :style="{ width: '100%', display: 'block' }"
                                 :icon="ArrowDownBold"
@@ -501,7 +662,9 @@
       </el-main>
     </el-container>
   </Transition>
-  <div id="testJ" v-show="false">{{ tasklist }}</div>
+  <!-- <div id="testJ" v-show="true" style="position: fixed; z-index: 5001">
+    {{ tasklist }}
+  </div> -->
 </template>
 
 <script setup>
@@ -511,13 +674,32 @@ import {
   CloseBold,
   Minus,
   ArrowDownBold,
+  Delete,
+  DCaret,
 } from "@element-plus/icons-vue";
-import { genFileId } from "element-plus";
-import { ref, reactive, toRaw, watch } from "vue";
-import { Debug, insert, generate_promptList, timeFormat } from "./pojo/NAIutils.js";
+import { ElDivider } from "element-plus";
+
+import { h, ref, reactive, toRaw, watch } from "vue";
+import {
+  Debug,
+  insert,
+  generate_promptList,
+  timeFormat,
+  PromptsBuilder,
+  count_task_prompts_num,
+} from "./pojo/NAIutils.js";
 import { unsafeWindow } from "$";
 import { saveAs } from "file-saver";
+import { v4 as uuidv4 } from "uuid";
+import { VueDraggable } from "vue-draggable-plus";
+/**
+ * @description 从json文件导入任务队列确认框状态
+ */
 const inportJsonFileConfirm = ref(false);
+
+/**
+ * @description 任务队列执行状态相关参数
+ */
 const progress = reactive({
   start: false,
   now: 0,
@@ -526,8 +708,20 @@ const progress = reactive({
   promptList: [],
   percentage: 0,
 });
+
+/**
+ * @description 生成请求状态
+ */
 const requesting = ref(false);
+
+/**
+ * @description 生成图片间隔秒数
+ */
 const delay = ref(2);
+
+/**
+ * @description 插件面板显示状态
+ */
 const panelShow = ref(false);
 
 window.onload = () => {
@@ -549,8 +743,15 @@ document.body.addEventListener(
   false
 );
 
+/**
+ * @description 暂存从json中加载的任务队列
+ */
 let json_temp_taskList = null;
 
+/**
+ * @description 将暂存的任务队列数据写入插件存储
+ * @param {*} append 是否追加 或覆盖
+ */
 const json_temp_to_taskList = (append) => {
   if (append) {
     tasklist.push(...json_temp_taskList);
@@ -560,7 +761,15 @@ const json_temp_to_taskList = (append) => {
   }
   inportJsonFileConfirm.value = false;
 };
+
+/**
+ * @description 从文件加载json时,用于清空接收file的input(需使用form.reset())
+ */
 const json_form = ref();
+
+/**
+ * @description 导入json文件时,input file改变时触发
+ */
 const handleJsonFile = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
@@ -568,6 +777,9 @@ const handleJsonFile = (event) => {
   reader.onload = function () {
     try {
       json_temp_taskList = JSON.parse(this.result);
+      json_temp_taskList.forEach((element) => {
+        element.uuid = uuidv4();
+      });
       inportJsonFileConfirm.value = true;
     } catch (SyntaxError) {
       ELMess(
@@ -603,16 +815,17 @@ const tasklist = reactive(
   localStorage.getItem("tasklist") == null
     ? [
         {
+          uuid: uuidv4(),
           activate: true,
           random: false,
           nums: 1,
           prompts: {
             splice: false,
             random: true,
-            data: [""],
+            data: [PromptsBuilder.newPromptSplice()],
           },
           uprompts: {
-            data: [""],
+            data: [PromptsBuilder.newPromptSplice()],
           },
         },
       ]
@@ -634,16 +847,17 @@ watch(
 );
 const addTask = () => {
   tasklist.push({
+    uuid: uuidv4(),
     activate: true,
     random: false,
     nums: 1,
     prompts: {
       splice: false,
       random: false,
-      data: [""],
+      data: [PromptsBuilder.newPromptSplice()],
     },
     uprompts: {
-      data: [""],
+      data: [PromptsBuilder.newPromptSplice()],
     },
   });
 };
@@ -666,19 +880,25 @@ const checkTaskSwich = (status) => {
   }
 };
 const copyTask = (item, container) => {
-  container.splice(container.indexOf(item) + 1, 0, JSON.parse(JSON.stringify(item)));
+  const index = container.indexOf(item);
+  const newItem = JSON.parse(JSON.stringify(item));
+  newItem.uuid = uuidv4();
+  container.splice(index + 1, 0, newItem);
 };
 const addPromptGroup = (item) => {
-  item.push([""]);
+  item.push(PromptsBuilder.newPromptGroup());
 };
 const addPromptSplice = (item) => {
-  item.push("");
+  item.push(PromptsBuilder.newPromptSplice());
 };
 const removechild = (item, container) => {
-  container.splice(container.indexOf(item), 1);
+  const i = container.indexOf(item);
+  if (i > -1) {
+    container.splice(i, 1);
+  }
 };
 const addPrompt = (item) => {
-  item.push("");
+  item.push(PromptsBuilder.newPromptSplice());
 };
 
 /**
@@ -839,14 +1059,22 @@ const upload = ref();
   opacity: 0;
 }
 
+/* 对移动中的元素应用的过渡 */
 .list-enter-active,
 .list-leave-active {
   transition: all 0.2s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
   transform: translateX(30px);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+  position: absolute;
 }
 
 .el-form-item {
@@ -864,7 +1092,7 @@ const upload = ref();
 }
 
 .el-card {
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   width: 100%;
 }
 
@@ -872,7 +1100,6 @@ const upload = ref();
   display: flex;
   margin-bottom: 0.5rem;
 }
-
 .scrollbar-demo-item {
   display: flex;
   align-items: center;
@@ -946,6 +1173,16 @@ const upload = ref();
   100% {
     transform: rotate(-360deg);
   }
+}
+.button-small-square {
+  padding: 5px;
+}
+.button_rt {
+  padding: 5px;
+  top: 0;
+  display: block;
+  right: -0;
+  position: absolute;
 }
 </style>
 

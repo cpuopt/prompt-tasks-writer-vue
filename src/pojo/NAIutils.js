@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 var opInterval = 200;
 
 /**
@@ -84,6 +86,7 @@ async function insert(prompt, uprompt, generate) {
         await click_generate();
     }
 }
+
 const timeFormat = {
     timeZone: "Asia/Shanghai",
     year: "numeric",
@@ -94,7 +97,7 @@ const timeFormat = {
     second: "2-digit",
 };
 const Debug = (...args) => {
-    console.debug(`[${new Date().toLocaleDateString("zh-CN", timeFormat)}]`, args);
+    console.debug(`${new Date().toLocaleDateString("zh-CN", timeFormat)}`, args);
 };
 
 /**
@@ -121,6 +124,97 @@ const cartesianProduct = (arrays) => {
 const randomChild = (list) => {
     return list[Math.floor(Math.random() * list.length)];
 };
+
+const deconstructUUIDList = (UUIDList) => {
+    const result_list = [];
+
+    UUIDList.forEach(({ uuid, data }) => {
+        result_list.push(data);
+    });
+    return result_list;
+};
+
+const deconstructDoubleLayerUUIDList = (doubleLayerUUIDList) => {
+    const result_list = [];
+    doubleLayerUUIDList.forEach(({ uuid, data, type }) => {
+        result_list.push(deconstructUUIDList(data));
+    });
+    return result_list;
+};
+class StatisticsUtil {
+    static factorial(n) {
+        if (0 === n) {
+            return 1;
+        }
+        let res = 1;
+        for (let i = 1; i <= n; ++i) {
+            res *= i;
+        }
+        return res;
+    }
+    static permutationNum(n, m) {
+        return this.factorial(m) / this.factorial(m - n);
+    }
+    static combinationNum(n, m) {
+        return this.permutationNum(n, m) / this.permutationNum(n, n);
+    }
+
+    static permutations(arr, n) {
+        if (n === 1) {
+            return arr.map((item) => [item]);
+        }
+
+        const result = [];
+        for (let i = 0; i < arr.length; i++) {
+            const remainingElements = arr.slice(0, i).concat(arr.slice(i + 1));
+            const subPermutations = this.permutations(remainingElements, n - 1);
+            for (const subPermutation of subPermutations) {
+                result.push([arr[i]].concat(subPermutation));
+            }
+        }
+
+        return result;
+    }
+    static combinations(arr, n) {
+        if (n === 1) {
+            return arr.map((item) => [item]);
+        }
+
+        const result = [];
+        for (let i = 0; i < arr.length - n + 1; i++) {
+            const subCombinations = this.combinations(arr.slice(i + 1), n - 1);
+            for (const subCombination of subCombinations) {
+                result.push([arr[i]].concat(subCombination));
+            }
+        }
+
+        return result;
+    }
+}
+/**
+ * @description 计算一个任务最少出多少张图可以覆盖全部的可能性
+ * @param {*} task
+ */
+const count_task_prompts_num = (task) => {
+    let prompts_num = 1;
+    if (task.prompts.splice) {
+        task.prompts.data.forEach((prompt_group) => {
+            switch (prompt_group.type) {
+                case "permutation":
+                    prompts_num = prompts_num * StatisticsUtil.permutationNum(prompt_group.choices, prompt_group.data.length);
+                    break;
+                case "combination":
+                    prompts_num = prompts_num * StatisticsUtil.combinationNum(prompt_group.choices, prompt_group.data.length);
+                    break;
+            }
+        });
+    } else {
+        prompts_num = task.prompts.data.length;
+    }
+
+    const uprompts_num = task.uprompts.data.length;
+    return prompts_num * uprompts_num;
+};
 /**
  * @description 生成提示词列表
  * @param {*} tasklist
@@ -129,6 +223,7 @@ const randomChild = (list) => {
 const generate_promptList = (tasklist) => {
     let TaskpromptGroupList = [];
 
+    /*  */
     tasklist = tasklist.filter((task) => {
         return task.activate == true;
     });
@@ -140,11 +235,31 @@ const generate_promptList = (tasklist) => {
         let ppromptList = ((prompts) => {
             let li = [];
             if (prompts.splice) {
-                cartesianProduct(prompts.data).forEach((element) => {
+                const prompt_groups_tags = [];
+                prompts.data.forEach((prompt_group) => {
+                    switch (prompt_group.type) {
+                        case "permutation":
+                            const permutation_choice_list = StatisticsUtil.permutations(deconstructUUIDList(prompt_group.data), prompt_group.choices);
+                            for (let index = 0; index < permutation_choice_list.length; index++) {
+                                permutation_choice_list[index] = permutation_choice_list[index].join(",");
+                            }
+                            prompt_groups_tags.push(permutation_choice_list);
+                            break;
+
+                        case "combination":
+                            const combination_choice_list = StatisticsUtil.combinations(deconstructUUIDList(prompt_group.data), prompt_group.choices);
+                            for (let index = 0; index < combination_choice_list.length; index++) {
+                                combination_choice_list[index] = combination_choice_list[index].join(",");
+                            }
+                            prompt_groups_tags.push(combination_choice_list);
+                            break;
+                    }
+                });
+                cartesianProduct(prompt_groups_tags).forEach((element) => {
                     li.push(element.join(","));
                 });
             } else {
-                li = prompts.data;
+                li = deconstructUUIDList(prompts.data);
             }
             if (prompts.random) {
                 li.sort(() => Math.random() - 0.5);
@@ -153,7 +268,7 @@ const generate_promptList = (tasklist) => {
         })(task.prompts);
 
         // 完整反向提示词列表
-        let upromptList = task.uprompts.data;
+        let upromptList = deconstructUUIDList(task.uprompts.data);
 
         if (task.random) {
             for (let index = 0; index < task.nums; index++) {
@@ -182,4 +297,17 @@ const generate_promptList = (tasklist) => {
     Debug(TaskpromptGroupList);
     return TaskpromptGroupList;
 };
-export { Debug, insert, generate_promptList, timeFormat };
+class PromptsBuilder {
+    static newPromptSplice() {
+        return { uuid: uuidv4(), data: "" };
+    }
+    static newPromptGroup() {
+        return {
+            uuid: uuidv4(),
+            data: [PromptsBuilder.newPromptSplice()],
+            type: "combination",
+            choices: 1,
+        };
+    }
+}
+export { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num };

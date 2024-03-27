@@ -11,7 +11,9 @@
   "dependencies": {
     "element-plus": "^2.6.1",
     "file-saver": "^2.0.5",
-    "vue": "^3.4.14"
+    "uuid": "^9.0.1",
+    "vue": "^3.4.14",
+    "vue-draggable-plus": "^0.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.3",
