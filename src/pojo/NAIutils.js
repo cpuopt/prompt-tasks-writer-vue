@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-
+import { StatisticsUtil } from "./StatisticsUtil.ts";
 var opInterval = 200;
 
 /**
@@ -122,9 +122,16 @@ const cartesianProduct = (arrays) => {
     );
 };
 const randomChild = (list) => {
-    return list[Math.floor(Math.random() * list.length)];
-};
+    const choice = Math.round(Math.random() * (list.length - 1));
 
+    return list[choice];
+};
+const removechild = (item, container) => {
+    const i = container.indexOf(item);
+    if (i > -1) {
+        container.splice(i, 1);
+    }
+};
 const deconstructUUIDList = (UUIDList) => {
     const result_list = [];
 
@@ -141,56 +148,7 @@ const deconstructDoubleLayerUUIDList = (doubleLayerUUIDList) => {
     });
     return result_list;
 };
-class StatisticsUtil {
-    static factorial(n) {
-        if (0 === n) {
-            return 1;
-        }
-        let res = 1;
-        for (let i = 1; i <= n; ++i) {
-            res *= i;
-        }
-        return res;
-    }
-    static permutationNum(n, m) {
-        return this.factorial(m) / this.factorial(m - n);
-    }
-    static combinationNum(n, m) {
-        return this.permutationNum(n, m) / this.permutationNum(n, n);
-    }
 
-    static permutations(arr, n) {
-        if (n === 1) {
-            return arr.map((item) => [item]);
-        }
-
-        const result = [];
-        for (let i = 0; i < arr.length; i++) {
-            const remainingElements = arr.slice(0, i).concat(arr.slice(i + 1));
-            const subPermutations = this.permutations(remainingElements, n - 1);
-            for (const subPermutation of subPermutations) {
-                result.push([arr[i]].concat(subPermutation));
-            }
-        }
-
-        return result;
-    }
-    static combinations(arr, n) {
-        if (n === 1) {
-            return arr.map((item) => [item]);
-        }
-
-        const result = [];
-        for (let i = 0; i < arr.length - n + 1; i++) {
-            const subCombinations = this.combinations(arr.slice(i + 1), n - 1);
-            for (const subCombination of subCombinations) {
-                result.push([arr[i]].concat(subCombination));
-            }
-        }
-
-        return result;
-    }
-}
 /**
  * @description 计算一个任务最少出多少张图可以覆盖全部的可能性
  * @param {*} task
@@ -262,7 +220,8 @@ const generate_promptList = (tasklist) => {
                 li = deconstructUUIDList(prompts.data);
             }
             if (prompts.random) {
-                li.sort(() => Math.random() - 0.5);
+                // li.sort(() => Math.random() - 0.5);
+                li = StatisticsUtil.shuffle(li);
             }
             return li;
         })(task.prompts);
@@ -291,7 +250,17 @@ const generate_promptList = (tasklist) => {
                 promptGroupList = promptGroupList.concat(promptGroupListRaw.slice(0, p));
             }
         }
+
         TaskpromptGroupList = TaskpromptGroupList.concat(promptGroupList);
+        // let rec = {};
+        // TaskpromptGroupList.forEach((element) => {
+        //     if (element.prompt in rec) {
+        //         rec[element.prompt] += 1;
+        //     } else {
+        //         rec[element.prompt] = 1;
+        //     }
+        // });
+        // console.log("rec:", rec);
     });
 
     Debug(TaskpromptGroupList);
@@ -307,7 +276,8 @@ class PromptsBuilder {
             data: [PromptsBuilder.newPromptSplice()],
             type: "combination",
             choices: 1,
+            color: "rgba(255,255,255,0.63)",
         };
     }
 }
-export { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num };
+export { removechild, Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num };
