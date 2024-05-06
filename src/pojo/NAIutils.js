@@ -1,21 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
-import { StatisticsUtil } from "./StatisticsUtil.ts";
-var opInterval = 200;
-
-/**
- * @description 向输入框内覆写内容
- * @param {object} area
- * @param {string} text
- */
-var insertText = (area, text) => {
-    area.focus();
-    document.execCommand("selectAll");
-    document.execCommand("delete");
-    document.execCommand("insertText", false, text);
-    area.blur();
-    // area.value = text;
-};
-
+import { v4 as uuidv4 } from 'uuid';
+import { StatisticsUtil } from './StatisticsUtil.ts';
+import { insertPrompt, insertUndesiredContent } from './NovelPageUtil.ts';
+const opInterval = 100;
 /**
  * @description 点击生成按钮
  * @returns
@@ -24,50 +10,6 @@ var click_generate = () => {
     return new Promise((resolve) => {
         setTimeout(() => {
             document.evaluate("//span[contains(text(),'Generate ') and contains(text(),' Image')]/..", document.body, null, 9, null).singleNodeValue.click();
-            resolve();
-        }, opInterval);
-    });
-};
-
-/**
- * @description 向正向提示词输入框内覆写内容
- * @param {string} prompt
- * @returns
- */
-var insertPrompt = async (prompt) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let Prompt_button = document.evaluate("//button[text()='Prompt']", document.body, null, 9, null).singleNodeValue;
-            if (Prompt_button != null) {
-                Prompt_button.click();
-            }
-            setTimeout(() => {
-                insertText(document.querySelector("textarea[placeholder='Write your prompt here. Use tags to sculpt your outputs.']"), prompt);
-                // localStorage.setItem("imagegen-prompt", `"${prompt}"`);
-            }, opInterval);
-
-            resolve();
-        }, opInterval);
-    });
-};
-
-/**
- * @description 向反向提示词输入框内覆写内容
- * @param {string} uprompt
- * @returns
- */
-var insertUndesiredContent = async (uprompt) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let UndesiredContent_button = document.evaluate("//button[text()='Undesired Content']", document.body, null, 9, null).singleNodeValue;
-            if (UndesiredContent_button != null) {
-                UndesiredContent_button.click();
-            }
-            setTimeout(() => {
-                insertText(document.querySelector("textarea[placeholder='Write what you want removed from the generation.']"), uprompt);
-                // localStorage.setItem("imagegen-negativeprompt", `"${uprompt}"`);
-            }, opInterval);
-
             resolve();
         }, opInterval);
     });
@@ -88,39 +30,18 @@ async function insert(prompt, uprompt, generate) {
 }
 
 const timeFormat = {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
 };
 const Debug = (...args) => {
-    console.debug(`${new Date().toLocaleDateString("zh-CN", timeFormat)}`, args);
+    console.debug(`${new Date().toLocaleDateString('zh-CN', timeFormat)}`, args[0]);
 };
 
-/**
- * @description 计算笛卡尔积
- * @param {*} arrays
- * @returns
- */
-const cartesianProduct = (arrays) => {
-    return arrays.reduce(
-        (a, b) => {
-            return a
-                .map((x) => {
-                    return b.map((y) => {
-                        return x.concat(y);
-                    });
-                })
-                .reduce((a, b) => {
-                    return a.concat(b);
-                }, []);
-        },
-        [[]]
-    );
-};
 const randomChild = (list) => {
     const choice = Math.round(Math.random() * (list.length - 1));
 
@@ -158,10 +79,10 @@ const count_task_prompts_num = (task) => {
     if (task.prompts.splice) {
         task.prompts.data.forEach((prompt_group) => {
             switch (prompt_group.type) {
-                case "permutation":
+                case 'permutation':
                     prompts_num = prompts_num * StatisticsUtil.permutationNum(prompt_group.choices, prompt_group.data.length);
                     break;
-                case "combination":
+                case 'combination':
                     prompts_num = prompts_num * StatisticsUtil.combinationNum(prompt_group.choices, prompt_group.data.length);
                     break;
             }
@@ -181,7 +102,6 @@ const count_task_prompts_num = (task) => {
 const generate_promptList = (tasklist) => {
     let TaskpromptGroupList = [];
 
-    /*  */
     tasklist = tasklist.filter((task) => {
         return task.activate == true;
     });
@@ -192,37 +112,53 @@ const generate_promptList = (tasklist) => {
         // 完整正向提示词列表
         let ppromptList = ((prompts) => {
             let li = [];
+            let need = task.nums;
+
             if (prompts.splice) {
                 const prompt_groups_tags = [];
                 prompts.data.forEach((prompt_group) => {
                     switch (prompt_group.type) {
-                        case "permutation":
-                            const permutation_choice_list = StatisticsUtil.permutations(deconstructUUIDList(prompt_group.data), prompt_group.choices);
+                        case 'permutation':
+                            let permutation_choice_list;
+                            if (prompts.random) {
+                                permutation_choice_list = StatisticsUtil.randomNPermutations(deconstructUUIDList(prompt_group.data), prompt_group.choices, need);
+                            } else {
+                                permutation_choice_list = StatisticsUtil.firstNPermutations(deconstructUUIDList(prompt_group.data), prompt_group.choices, need);
+                            }
                             for (let index = 0; index < permutation_choice_list.length; index++) {
-                                permutation_choice_list[index] = permutation_choice_list[index].join(",");
+                                permutation_choice_list[index] = permutation_choice_list[index].join(',');
                             }
                             prompt_groups_tags.push(permutation_choice_list);
                             break;
 
-                        case "combination":
-                            const combination_choice_list = StatisticsUtil.combinations(deconstructUUIDList(prompt_group.data), prompt_group.choices);
+                        case 'combination':
+                            let combination_choice_list;
+                            if (prompts.random) {
+                                combination_choice_list = StatisticsUtil.randomNCombinations(deconstructUUIDList(prompt_group.data), prompt_group.choices, need);
+                            } else {
+                                combination_choice_list = StatisticsUtil.firstNCombinations(deconstructUUIDList(prompt_group.data), prompt_group.choices, need);
+                            }
                             for (let index = 0; index < combination_choice_list.length; index++) {
-                                combination_choice_list[index] = combination_choice_list[index].join(",");
+                                combination_choice_list[index] = combination_choice_list[index].join(',');
                             }
                             prompt_groups_tags.push(combination_choice_list);
                             break;
                     }
                 });
-                cartesianProduct(prompt_groups_tags).forEach((element) => {
-                    li.push(element.join(","));
-                });
+                // 正向提示词随机处理
+                if (prompts.random) {
+                    StatisticsUtil.randomCartesianProduct(prompt_groups_tags, need).forEach((element) => {
+                        li.push(element.join(','));
+                    });
+                } else {
+                    StatisticsUtil.getFirstNCartesianProduct(prompt_groups_tags, need).forEach((element) => {
+                        li.push(element.join(','));
+                    });
+                }
             } else {
                 li = deconstructUUIDList(prompts.data);
             }
-            if (prompts.random) {
-                // li.sort(() => Math.random() - 0.5);
-                li = StatisticsUtil.shuffle(li);
-            }
+
             return li;
         })(task.prompts);
 
@@ -230,13 +166,19 @@ const generate_promptList = (tasklist) => {
         let upromptList = deconstructUUIDList(task.uprompts.data);
 
         if (task.random) {
-            for (let index = 0; index < task.nums; index++) {
-                promptGroupList.push({ prompt: randomChild(ppromptList), uprompt: randomChild(upromptList) });
+            promptGroupList = promptGroupList.concat(StatisticsUtil.randomCartesianProduct([ppromptList, upromptList, [task.size]], task.nums));
+            let pex = task.nums - promptGroupList.length;
+            if (pex <= 0) {
+                promptGroupList = promptGroupList.slice(0, task.nums);
+            } else {
+                let temp = [];
+                for (let index = 0; index < task.nums; index++) {
+                    temp.push(randomChild(promptGroupList));
+                }
+                promptGroupList = temp;
             }
         } else {
-            cartesianProduct([ppromptList, upromptList]).forEach((element) => {
-                promptGroupList.push({ prompt: element[0], uprompt: element[1] });
-            });
+            promptGroupList = promptGroupList.concat(StatisticsUtil.getFirstNCartesianProduct([ppromptList, upromptList, [task.size]], task.nums));
             let pex = task.nums - promptGroupList.length;
             if (pex <= 0) {
                 promptGroupList = promptGroupList.slice(0, task.nums);
@@ -250,8 +192,17 @@ const generate_promptList = (tasklist) => {
                 promptGroupList = promptGroupList.concat(promptGroupListRaw.slice(0, p));
             }
         }
+        let finpromptGroupList = [];
+        promptGroupList.forEach((element) => {
+            finpromptGroupList.push({
+                prompt: element[0],
+                uprompt: element[1],
+                size: element[2]
+            });
+        });
 
-        TaskpromptGroupList = TaskpromptGroupList.concat(promptGroupList);
+        TaskpromptGroupList = TaskpromptGroupList.concat(finpromptGroupList);
+
         // let rec = {};
         // TaskpromptGroupList.forEach((element) => {
         //     if (element.prompt in rec) {
@@ -268,15 +219,45 @@ const generate_promptList = (tasklist) => {
 };
 class PromptsBuilder {
     static newPromptSplice() {
-        return { uuid: uuidv4(), data: "" };
+        return { uuid: uuidv4(), data: '' };
     }
     static newPromptGroup() {
         return {
             uuid: uuidv4(),
-            data: [PromptsBuilder.newPromptSplice()],
-            type: "combination",
+            data: [this.newPromptSplice()],
+            type: 'combination',
             choices: 1,
-            color: "rgba(255,255,255,0.63)",
+            color: 'rgba(255,255,255,0.63)'
+        };
+    }
+    static newTasklist() {
+        return {
+            cooling: 2,
+            realTimeSave: true,
+            autoDownloadZIP: false,
+            tasks: [this.newTask()]
+        };
+    }
+    static newTask() {
+        return {
+            uuid: uuidv4(),
+            title: '',
+            activate: true,
+            random: false,
+            nums: 1,
+            fold: false,
+            size: {
+                width: 832,
+                height: 1216
+            },
+            prompts: {
+                splice: false,
+                random: false,
+                data: [this.newPromptSplice()]
+            },
+            uprompts: {
+                data: [this.newPromptSplice()]
+            }
         };
     }
 }
