@@ -637,10 +637,10 @@ let json_temp_taskList = null;
  */
 const json_temp_to_taskList = (append) => {
     if (append) {
-        tasklist.tasks.push(...json_temp_taskList);
+        tasklist.tasks.push(...json_temp_taskList.tasks);
     } else {
         tasklist.tasks.splice(0, tasklist.tasks.length);
-        tasklist.tasks.push(...json_temp_taskList);
+        tasklist.tasks.push(...json_temp_taskList.tasks);
     }
     inportJsonFileConfirm.value = false;
 };
@@ -660,7 +660,7 @@ const handleJsonFile = (event) => {
     reader.onload = function () {
         try {
             json_temp_taskList = JSON.parse(this.result);
-            json_temp_taskList.forEach((element) => {
+            json_temp_taskList.tasks.forEach((element) => {
                 element.uuid = uuidv4();
             });
             inportJsonFileConfirm.value = true;

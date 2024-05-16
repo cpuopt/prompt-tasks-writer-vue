@@ -23,7 +23,7 @@ export default defineConfig({
             userscript: {
                 icon: 'https://www.google.com/s2/favicons?sz=64&domain=novelai.net',
                 namespace: 'https://www.cpufan.top/index.php/2024/03/18/novelai-prompts-task-writer/',
-                version: '0.0.1.240506',
+                version: '0.0.1.240510',
                 match: ['https://novelai.net/image'],
                 author: 'cpuopt',
                 description: {
