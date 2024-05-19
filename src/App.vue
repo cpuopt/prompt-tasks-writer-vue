@@ -25,7 +25,7 @@
         <el-container v-show="panelShow.show" :style="{}" class="pluginPanel" @click.stop>
             <el-header>
                 <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false" style="align-items: center">
-                    <el-text class="mx-1" type="primary" size="large">NovelAI绘图任务队列生成器 {{ 'v0.0.1.240506' }}</el-text>
+                    <el-text class="mx-1" type="primary" size="large">{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text>
 
                     <div class="flex-grow"></div>
                     <el-button type="danger" plain :icon="CloseBold" @click="changeShow()" :style="{ height: '30px', width: '30px' }" />
@@ -84,6 +84,13 @@
                                             "
                                         ></ConfirmButton>
                                         <ToolTip :content="'更新插件版本后，请清除插件数据并刷新页面。'" />
+                                    </el-space>
+                                </el-form-item>
+
+                                <el-form-item label="禁用动画效果：">
+                                    <el-space :size="15">
+                                        <el-switch v-model="tasklist.removeAnmition" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                                        <ToolTip :content="'禁用生成图片时背景上的动画效果<br />可明显降低页面CPU占用并提高流畅度，建议开启'" />
                                     </el-space>
                                 </el-form-item>
                             </el-form>
@@ -574,6 +581,7 @@ import { unsafeWindow } from '$';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 import { VueDraggable } from 'vue-draggable-plus';
+import pluginConfig from '../plugin.config.js';
 /**
  * @description 从json文件导入任务队列确认框状态
  */
@@ -926,6 +934,19 @@ watch(GENERATING, (newValue, oldValue) => {
         }
     }
 });
+const styleAnmition = document.createElement('style');
+styleAnmition.innerHTML = '#__next div.ePsgKP {display: none;}';
+watch(
+    () => tasklist.removeAnmition,
+    (status) => {
+        if (status) {
+            document.head.appendChild(styleAnmition);
+        } else {
+            document.head.removeChild(styleAnmition);
+        }
+    },
+    { immediate: true }
+);
 const next = async () => {
     let { prompt, uprompt, size } = progress.promptList[progress.now];
     setTimeout(async () => {

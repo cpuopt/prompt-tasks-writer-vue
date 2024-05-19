@@ -235,6 +235,7 @@ class PromptsBuilder {
             cooling: 2,
             realTimeSave: true,
             autoDownloadZIP: false,
+            removeAnmition: false,
             tasks: [this.newTask()]
         };
     }

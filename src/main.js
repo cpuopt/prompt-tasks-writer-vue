@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import 'hacktimer'
 import './style.css';
 import App from './App.vue';
 import { unsafeWindow } from '$';
