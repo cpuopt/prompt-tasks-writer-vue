@@ -26,7 +26,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Delete } from '@element-plus/icons-vue';
-import { removechild } from '../pojo/NAIutils';
+import { removechild } from '@/pojo/NAIutils';
 
 const visible = ref(false);
 defineProps({

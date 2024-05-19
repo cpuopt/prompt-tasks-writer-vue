@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import 'hacktimer'
-import './style.css';
-import App from './App.vue';
+import '@/style.css';
+import App from '@/App.vue';
 import { unsafeWindow } from '$';
 unsafeWindow.confirm = function () {
     return true;

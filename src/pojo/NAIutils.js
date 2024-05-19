@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { StatisticsUtil } from './StatisticsUtil.ts';
-import { insertPrompt, insertUndesiredContent } from './NovelPageUtil.ts';
+import { StatisticsUtil } from '@/pojo/StatisticsUtil.ts';
+import { insertPrompt, insertUndesiredContent } from '@/pojo/NovelPageUtil.ts';
 const opInterval = 100;
 /**
  * @description 点击生成按钮

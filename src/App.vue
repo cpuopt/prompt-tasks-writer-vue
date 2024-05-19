@@ -568,20 +568,20 @@
 <script setup>
 import { Fold, CopyDocument, Odometer, Close, Check, CloseBold, QuestionFilled, ArrowDownBold, Delete, DCaret, Edit, Plus } from '@element-plus/icons-vue';
 import { ElDivider } from 'element-plus';
-import DeleteButton from './components/DeleteButton.vue';
-import DeleteTask from './components/DeleteTask.vue';
-import ImageSizeInput from './components/ImageSizeInput.vue';
-import TaskTitle from './components/TaskTitle.vue';
-import ToolTip from './components/ToolTip.vue';
-import ConfirmButton from './components/ConfirmButton.vue';
+import DeleteButton from '@/components/DeleteButton.vue';
+import DeleteTask from '@/components/DeleteTask.vue';
+import ImageSizeInput from '@/components/ImageSizeInput.vue';
+import TaskTitle from '@/components/TaskTitle.vue';
+import ToolTip from '@/components/ToolTip.vue';
+import ConfirmButton from '@/components/ConfirmButton.vue';
 import { h, ref, reactive, toRaw, watch, onMounted, onUnmounted } from 'vue';
-import { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, removechild } from './pojo/NAIutils.js';
-import { setImageSettingSize, clickDownloadZIPButton } from './pojo/NovelPageUtil.ts';
+import { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, removechild } from '@/pojo/NAIutils.js';
+import { setImageSettingSize, clickDownloadZIPButton } from '@/pojo/NovelPageUtil.ts';
 import { unsafeWindow } from '$';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 import { VueDraggable } from 'vue-draggable-plus';
-import pluginConfig from '../plugin.config.js';
+import pluginConfig from '/plugin.config.js';
 /**
  * @description 从json文件导入任务队列确认框状态
  */

@@ -6,7 +6,8 @@ import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import obfuscator from 'rollup-plugin-obfuscator';
-import pluginConfig from './plugin.config';
+import pluginConfig from './plugin.config.js';
+import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -27,5 +28,11 @@ export default defineConfig({
                 }
             }
         })
-    ]
+    ],
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+            '~': path.resolve(__dirname)
+        }
+    }
 });
