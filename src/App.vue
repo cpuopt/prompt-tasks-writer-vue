@@ -93,6 +93,13 @@
                                         <ToolTip :content="'禁用生成图片时背景上的动画效果<br />可明显降低页面CPU占用并提高流畅度，建议开启'" />
                                     </el-space>
                                 </el-form-item>
+
+                                <el-form-item label="标签编辑器：">
+                                    <el-space :size="15">
+                                        <el-button type="info" plain @click="tag_selector_status.show = true" size="small">打开</el-button>
+                                        <ToolTip :content="'标签编辑器，测试功能'" />
+                                    </el-space>
+                                </el-form-item>
                             </el-form>
                         </el-card>
                     </div>
@@ -563,6 +570,7 @@
     <br>
     {{ STATUS }}
   </div> -->
+    <TagSelector v-if="tag_selector_status.show" :tag_selector_status="tag_selector_status" />
 </template>
 
 <script setup>
@@ -582,6 +590,9 @@ import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 import { VueDraggable } from 'vue-draggable-plus';
 import pluginConfig from '/plugin.config.js';
+import TagSelector from '@/view/TagSelector.vue';
+
+const tag_selector_status = reactive({ show: false });
 /**
  * @description 从json文件导入任务队列确认框状态
  */
@@ -621,7 +632,8 @@ window.onload = () => {
 };
 
 const bodyClickCallback = (e) => {
-    if (!/el-popper/.test(findDeep2ndParentNode(e.target).id) && ['TEXTAREA', 'BUTTON', 'BODY'].indexOf(e.target.tagName) == -1)
+    // !/el-popper/.test(findDeep2ndParentNode(e.target).id) &&
+    if (!findDeep2ndParentNode(e.target).getAttributeNames().includes('data-v-app') && ['TEXTAREA', 'BUTTON', 'BODY'].indexOf(e.target.tagName) == -1)
         if (panelShow.show) {
             panelShow.show = false;
             localStorage.setItem('panelShow', panelShow.show);
