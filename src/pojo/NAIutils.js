@@ -221,6 +221,9 @@ class PromptsBuilder {
     static newPromptSplice() {
         return { uuid: uuidv4(), data: '' };
     }
+    static addPromptSplice(text) {
+        return { uuid: uuidv4(), data: text };
+    }
     static newPromptGroup() {
         return {
             uuid: uuidv4(),
