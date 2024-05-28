@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "experimentalDecorators": true,
+        "baseUrl": "./",
+        "paths": {
+            "@/*": ["src/*"]
+        }
+    },
+    "exclude": ["node_modules", "dist"]
+}

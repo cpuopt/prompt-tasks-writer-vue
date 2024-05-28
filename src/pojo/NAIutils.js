@@ -264,5 +264,17 @@ class PromptsBuilder {
             }
         };
     }
+    static addMissingProperties(obj) {
+        const template = this.newTask();
+        for (const key in template) {
+            if (obj.hasOwnProperty(key)) {
+                if (!obj.hasOwnProperty(key)) {
+                    obj[key] = template[key];
+                } else if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
+                    obj[key] = addMissingProperties(obj[key]);
+                }
+            }
+        }
+    }
 }
 export { removechild, Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num };

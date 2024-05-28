@@ -82,7 +82,7 @@
       <el-main>
         <el-scrollbar>
           <div style="width: 99%">
-            <el-card style="min-width: 600px; margin-bottom: 0.5rem">
+            <el-card style="min-width: 600px; margin-bottom: 2rem" shadow="hover">
               <template #header>
                 <div class="card-header">
                   <span style="margin-right: 1rem">插件配置</span>
@@ -204,6 +204,7 @@
               </el-form>
             </el-card>
           </div>
+          <el-divider border-style="dashed" />
           <div style="width: 99%">
             <TransitionGroup name="list" tag="div">
               <div
@@ -212,79 +213,80 @@
                 class="textarea2button_container"
                 style="position: relative"
               >
-                <el-card style="min-width: 600px" body-style="position: relative;">
+                <el-card
+                  style="min-width: 600px"
+                  body-style="position: relative;"
+                  header-style=""
+                  shadow="hover"
+                >
                   <template #header>
                     <div class="card-header" style="">
                       <TaskTitle :task="task" :taskIndex="taskIndex" />
 
-                      <el-tooltip
-                        :enterable="false"
-                        class="box-item"
-                        effect="dark"
-                        content="切换启用/忽略该任务"
-                        placement="top-start"
-                      >
-                        <el-switch
-                          v-model="task.activate"
-                          class="mb-2"
-                          inline-prompt
-                          style="
-                            margin-inline: 0.5rem;
-                            margin-left: auto;
-                            --el-switch-on-color: #13ce66;
-                            --el-switch-off-color: #ff4949;
-                            float: inline-end;
-                          "
-                          active-text="启用"
-                          inactive-text="忽略"
-                          :disabled="checkTaskSwich(task.activate)"
-                        />
-                      </el-tooltip>
-
-                      <el-tooltip
-                        class="box-item"
-                        effect="dark"
-                        :enterable="false"
-                        content="复制这一整个任务"
-                        placement="top-start"
+                      <div
+                        class="button-rt-container"
+                        style="flex-direction: row-reverse"
                       >
                         <el-button
-                          type="info"
+                          size="small"
+                          class="button-rt"
                           plain
-                          @click="copyTask(task, tasklist.tasks)"
-                          :icon="CopyDocument"
-                          circle
-                          style="margin-inline: 0.5rem; float: inline-end"
+                          @click="task.fold = !task.fold"
+                          ><el-icon
+                            :style="{
+                              transition: 'transform 0.2s ease',
+                              transform: task.fold ? 'rotate(90deg)' : 'rotate(0deg)',
+                            }"
+                            ><ArrowDownBold /></el-icon
                         ></el-button>
-                      </el-tooltip>
 
-                      <div
-                        v-show="
-                          !(
-                            tasklist.tasks.length < 2 ||
-                            (activateTaskNum < 2 && task.activate == true)
-                          )
-                        "
-                        style="margin-inline-start: 0.5rem"
-                      >
-                        <DeleteTask
-                          :task="task"
-                          :tasks="tasklist.tasks"
-                          :panelShow="panelShow"
-                          :taskIndex="taskIndex"
+                        <el-tooltip
+                          class="box-item"
+                          effect="dark"
+                          :enterable="false"
+                          content="复制这一整个任务"
+                          placement="top-start"
+                        >
+                          <el-button
+                            type="info"
+                            size="small"
+                            class="button-rt"
+                            plain
+                            @click="copyTask(task, tasklist.tasks)"
+                            :icon="CopyDocument"
+                          ></el-button>
+                        </el-tooltip>
+
+                        <div>
+                          <DeleteTask
+                            :task="task"
+                            :tasks="tasklist.tasks"
+                            :panelShow="panelShow"
+                            :taskIndex="taskIndex"
+                            :disable="
+                              tasklist.tasks.length < 2 ||
+                              (activateTaskNum < 2 && task.activate == true)
+                            "
+                          />
+                        </div>
+
+                        <el-checkbox
+                          v-model="task.activate"
+                          :label="task.activate ? '已启用' : '已忽略'"
+                          :disabled="checkTaskSwich(task.activate)"
+                          :style="{
+                            transition: 'background-color 0.2s ease',
+                            backgroundColor: task.activate ? '#d9ecff' : 'transparent',
+                            opacity: task.activate ? '1' : '0.56',
+                          }"
+                          size="small"
+                          border
+                          text-color="#13CE67"
                         />
                       </div>
                     </div>
                   </template>
-                  <div class="button-rt-container">
-                    <el-button
-                      size="small"
-                      class="button-rt"
-                      plain
-                      @click="task.fold = !task.fold"
-                      :icon="Fold"
-                    ></el-button>
-                  </div>
+
                   <div v-show="task.fold" style="display: flex; justify-content: center">
                     <el-button
                       class="long_button"
@@ -346,7 +348,7 @@
                     </el-form-item>
 
                     <el-form-item label="正向提示词：">
-                      <el-card>
+                      <el-card shadow="hover">
                         <el-form :model="task" label-width="7rem">
                           <el-form-item label="类型：">
                             <el-space :size="15">
@@ -429,6 +431,7 @@
                                   <el-card
                                     style="padding-right: 0.5rem"
                                     body-class="prompts-group-body"
+                                    shadow="hover"
                                   >
                                     <VueDraggable
                                       v-model="prompts_group.data"
@@ -455,14 +458,14 @@
                                             class="prompt-handle cursor-move button-small-square"
                                             size="small"
                                           />
-                                          <el-input
-                                            v-model="prompts_group.data[index].data"
-                                            :autosize="{ minRows: 1, maxRows: 16 }"
-                                            type="textarea"
-                                            placeholder="提示词片段"
+
+                                          <PromptInput
+                                            :prompt="prompt"
+                                            :prompts_group="prompts_group"
+                                            :index="index"
                                           />
-                                          <div
-                                            v-hide="prompts_group.data.length < 2"
+                                          <!-- <div
+                                            v-if="!(prompts_group.data.length < 2)"
                                             class="button-rt-container"
                                           >
                                             <el-button
@@ -482,7 +485,7 @@
                                               "
                                               :icon="Delete"
                                             ></el-button>
-                                          </div>
+                                          </div> -->
                                         </div>
                                       </TransitionGroup>
                                     </VueDraggable>
@@ -646,7 +649,7 @@
                             v-if="!task.prompts.splice"
                             label="完整提示词组："
                           >
-                            <el-card style="display: inline-block">
+                            <el-card style="display: inline-block" shadow="hover">
                               <TransitionGroup name="list" tag="div">
                                 <div
                                   v-for="(prompt, index) in task.prompts.data"
@@ -691,7 +694,7 @@
                       <!-- <el-card>
                                                 <el-form :model="task" label-width="0rem">
                                                     <el-form-item label=""> -->
-                      <el-card style="display: inline-block">
+                      <el-card style="display: inline-block" shadow="hover">
                         <TransitionGroup name="list" tag="div">
                           <div
                             v-for="(uprompt, index) in task.uprompts.data"
@@ -906,6 +909,7 @@
 </template>
 
 <script setup>
+import PromptInput from "./components/PromptInput.vue";
 import {
   Fold,
   CopyDocument,
@@ -914,12 +918,10 @@ import {
   Close,
   Check,
   CloseBold,
-  QuestionFilled,
   ArrowDownBold,
   Delete,
   DCaret,
   Edit,
-  Plus,
 } from "@element-plus/icons-vue";
 import { ElDivider } from "element-plus";
 import DeleteButton from "@/components/DeleteButton.vue";
@@ -1531,7 +1533,12 @@ const predefineColors = ref([
   /* margin-bottom: 1rem; */
   width: 100%;
 }
-
+.textarea2button_container > .el-card :deep(.el-card__header) {
+  padding-block: 0.5rem !important;
+}
+.textarea2button_container > .el-card :deep(.el-card__body) {
+  padding-block: 0.5rem !important;
+}
 .card-header {
   display: flex;
   flex-direction: row;
@@ -1542,7 +1549,7 @@ const predefineColors = ref([
 
 .textarea2button_container {
   display: flex;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .scrollbar-demo-item {
@@ -1581,7 +1588,8 @@ const predefineColors = ref([
 
 @media screen and (max-width: 700px) {
   .pluginPanel {
-    box-shadow: var(--el-box-shadow-dark);
+    box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3),
+      0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
     border: var(--el-border-radius-round);
     position: fixed;
     top: 4vh;
@@ -1617,7 +1625,7 @@ const predefineColors = ref([
 
 .showButton::before {
   content: "";
-  background-image: conic-gradient(#ffffff 20deg, transparent 120deg);
+  background-image: conic-gradient(v-bind("__themeColor.bg1") 20deg, transparent 120deg);
   width: 130%;
   height: 130%;
   position: absolute;
