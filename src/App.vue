@@ -14,7 +14,7 @@
       height: 30px;
       width: 60px;
       flex-direction: row;
-      z-index: 9995;
+      z-index: 2000;
     "
   >
     <el-tooltip
@@ -416,55 +416,63 @@
                                 <div
                                   v-for="(prompts_group, index) in task.prompts.data"
                                   :key="prompts_group.uuid"
-                                  style="width: 100%; position: relative"
-                                  class="textarea2button_container"
+                                  style="width: 100%"
                                 >
-                                  <el-button
-                                    :disabled="!(task.prompts.data.length > 1)"
-                                    :icon="DCaret"
-                                    class="groups-handle cursor-move button-small-square"
-                                    size="small"
-                                    :style="{
-                                      backgroundColor: prompts_group.color,
-                                    }"
+                                  <AddArea
+                                    :index="index"
+                                    :task_prompts="task.prompts"
+                                    :idKey="prompts_group.uuid"
                                   />
-                                  <el-card
-                                    style="padding-right: 0.5rem"
-                                    body-class="prompts-group-body"
-                                    shadow="hover"
+                                  <div
+                                    class="textarea2button_container"
+                                    style="margin-bottom: 0; position: relative"
                                   >
-                                    <VueDraggable
-                                      v-model="prompts_group.data"
-                                      class="flex flex-col gap-2 p-4 w-300px bg-gray-500/5 rounded"
-                                      target=".prompts"
-                                      :scroll="true"
-                                      :animation="200"
-                                      handle=".prompt-handle"
+                                    <el-button
+                                      :disabled="!(task.prompts.data.length > 1)"
+                                      :icon="DCaret"
+                                      class="groups-handle cursor-move button-small-square"
+                                      size="small"
+                                      :style="{
+                                        backgroundColor: prompts_group.color,
+                                      }"
+                                    />
+                                    <el-card
+                                      style="padding-right: 0.5rem"
+                                      body-class="prompts-group-body"
+                                      shadow="hover"
                                     >
-                                      <TransitionGroup
-                                        name="list"
-                                        tag="div"
-                                        class="prompts"
+                                      <VueDraggable
+                                        v-model="prompts_group.data"
+                                        class="flex flex-col gap-2 p-4 w-300px bg-gray-500/5 rounded"
+                                        target=".prompts"
+                                        :scroll="true"
+                                        :animation="200"
+                                        handle=".prompt-handle"
                                       >
-                                        <div
-                                          v-for="(prompt, index) in prompts_group.data"
-                                          class="textarea2button_container"
-                                          :key="prompt.uuid"
-                                          style="position: relative"
+                                        <TransitionGroup
+                                          name="list"
+                                          tag="div"
+                                          class="prompts"
                                         >
-                                          <el-button
-                                            :disabled="!(prompts_group.data.length > 1)"
-                                            :icon="DCaret"
-                                            class="prompt-handle cursor-move button-small-square"
-                                            size="small"
-                                          />
+                                          <div
+                                            v-for="(prompt, index) in prompts_group.data"
+                                            class="textarea2button_container"
+                                            :key="prompt.uuid"
+                                            style="position: relative"
+                                          >
+                                            <el-button
+                                              :disabled="!(prompts_group.data.length > 1)"
+                                              :icon="DCaret"
+                                              class="prompt-handle cursor-move button-small-square"
+                                              size="small"
+                                            />
 
-                                          <PromptInput
-                                            :prompt="prompt"
-                                            :prompts_group="prompts_group"
-                                            :index="index"
-                                          />
-                                          <!-- <div
+                                            <PromptInput
+                                              :prompt="prompt"
+                                              :prompts_group="prompts_group"
+                                              :index="index"
+                                            />
+                                            <!-- <div
                                             v-if="!(prompts_group.data.length < 2)"
                                             class="button-rt-container"
                                           >
@@ -486,139 +494,142 @@
                                               :icon="Delete"
                                             ></el-button>
                                           </div> -->
-                                        </div>
-                                      </TransitionGroup>
-                                    </VueDraggable>
-                                    <div
-                                      style="
-                                        display: flex;
-                                        flex-direction: row;
-                                        line-height: normal;
-                                        justify-content: space-between;
-                                      "
-                                    >
-                                      <el-button
-                                        type="primary"
-                                        size="small"
-                                        @click="addPromptSplice(prompts_group.data)"
-                                        style=""
-                                        :icon="ArrowDownBold"
-                                      ></el-button>
-                                      <LoadPresets
-                                        :PRESETS="PRESETS"
-                                        :PRESETS_NAME="PRESETS_NAME"
-                                        :container="prompts_group.data"
-                                      />
-                                      <div style="margin-left: auto"></div>
-                                      <div>
-                                        <el-space
-                                          :size="10"
-                                          :spacer="
-                                            h(ElDivider, { direction: 'vertical' })
-                                          "
-                                        >
-                                          <div>
-                                            <el-text class="mx-1" size="small"
-                                              >选取</el-text
-                                            >
-                                            <el-input-number
-                                              v-model="prompts_group.choices"
-                                              size="small"
-                                              style="width: 5rem"
-                                              :min="1"
-                                              :max="prompts_group.data.length"
-                                            />
-                                            <el-text class="mx-1" size="small"
-                                              >个</el-text
-                                            >
                                           </div>
-                                          <el-tooltip
-                                            class="box-item"
-                                            effect="dark"
-                                            :enterable="false"
-                                            content="仅抽取1个tag时，排列和组合没有差别"
-                                            placement="top"
-                                            :disabled="prompts_group.choices != 1"
-                                          >
-                                            <el-radio-group
-                                              v-model="prompts_group.type"
-                                              size="small"
-                                              :disabled="prompts_group.choices == 1"
-                                            >
-                                              <el-tooltip
-                                                class="box-item"
-                                                effect="dark"
-                                                :enterable="false"
-                                                :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并排出不同的顺序`"
-                                                placement="top"
-                                                :disabled="prompts_group.choices == 1"
-                                              >
-                                                <el-radio-button
-                                                  label="排列"
-                                                  value="permutation"
-                                                />
-                                              </el-tooltip>
-
-                                              <el-tooltip
-                                                class="box-item"
-                                                effect="dark"
-                                                :enterable="false"
-                                                :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并按填入的顺序排列`"
-                                                placement="top"
-                                                :disabled="prompts_group.choices == 1"
-                                              >
-                                                <el-radio-button
-                                                  label="组合"
-                                                  value="combination"
-                                                />
-                                              </el-tooltip>
-                                            </el-radio-group>
-                                          </el-tooltip>
-                                        </el-space>
-                                      </div>
-                                    </div>
-                                  </el-card>
-                                  <div class="button-rt-container">
-                                    <DeleteButton
-                                      :uprompt="prompts_group"
-                                      :uprompts-date="task.prompts.data"
-                                      :panel-show="panelShow"
-                                    />
-                                    <el-tooltip
-                                      class="box-item"
-                                      effect="dark"
-                                      content="复制提示词组"
-                                      placement="right"
-                                    >
-                                      <el-button
-                                        type="primary"
-                                        size="small"
-                                        class="button-rt"
-                                        plain
-                                        @click="
-                                          () => {
-                                            copyTaskGroup = JSON.parse(
-                                              JSON.stringify(prompts_group)
-                                            );
-                                          }
+                                        </TransitionGroup>
+                                      </VueDraggable>
+                                      <div
+                                        style="
+                                          display: flex;
+                                          flex-direction: row;
+                                          line-height: normal;
+                                          justify-content: space-between;
                                         "
-                                        :icon="CopyDocument"
-                                      ></el-button>
-                                    </el-tooltip>
+                                      >
+                                        <el-button
+                                          type="primary"
+                                          size="small"
+                                          @click="addPromptSplice(prompts_group.data)"
+                                          style=""
+                                          :icon="ArrowDownBold"
+                                        ></el-button>
+                                        <LoadPresets
+                                          :PRESETS="PRESETS"
+                                          :PRESETS_NAME="PRESETS_NAME"
+                                          :container="prompts_group.data"
+                                        />
+                                        <div style="margin-left: auto"></div>
+                                        <div>
+                                          <el-space
+                                            :size="10"
+                                            :spacer="
+                                              h(ElDivider, { direction: 'vertical' })
+                                            "
+                                          >
+                                            <div>
+                                              <el-text class="mx-1" size="small"
+                                                >选取</el-text
+                                              >
+                                              <el-input-number
+                                                v-model="prompts_group.choices"
+                                                size="small"
+                                                style="width: 5rem"
+                                                :min="1"
+                                                :max="prompts_group.data.length"
+                                              />
+                                              <el-text class="mx-1" size="small"
+                                                >个</el-text
+                                              >
+                                            </div>
+                                            <el-tooltip
+                                              class="box-item"
+                                              effect="dark"
+                                              :enterable="false"
+                                              content="仅抽取1个tag时，排列和组合没有差别"
+                                              placement="top"
+                                              :disabled="prompts_group.choices != 1"
+                                            >
+                                              <el-radio-group
+                                                v-model="prompts_group.type"
+                                                size="small"
+                                                :disabled="prompts_group.choices == 1"
+                                              >
+                                                <el-tooltip
+                                                  class="box-item"
+                                                  effect="dark"
+                                                  :enterable="false"
+                                                  :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并排出不同的顺序`"
+                                                  placement="top"
+                                                  :disabled="prompts_group.choices == 1"
+                                                >
+                                                  <el-radio-button
+                                                    label="排列"
+                                                    value="permutation"
+                                                  />
+                                                </el-tooltip>
 
-                                    <el-color-picker
-                                      v-if="colorPicker_status"
-                                      size="small"
-                                      v-model="prompts_group.color"
-                                      :predefine="predefineColors"
-                                      @click.stop
-                                      show-alpha
-                                    />
+                                                <el-tooltip
+                                                  class="box-item"
+                                                  effect="dark"
+                                                  :enterable="false"
+                                                  :content="`从${prompts_group.data.length}个tag中选取${prompts_group.choices}个，并按填入的顺序排列`"
+                                                  placement="top"
+                                                  :disabled="prompts_group.choices == 1"
+                                                >
+                                                  <el-radio-button
+                                                    label="组合"
+                                                    value="combination"
+                                                  />
+                                                </el-tooltip>
+                                              </el-radio-group>
+                                            </el-tooltip>
+                                          </el-space>
+                                        </div>
+                                      </div>
+                                    </el-card>
+                                    <div class="button-rt-container">
+                                      <DeleteButton
+                                        :uprompt="prompts_group"
+                                        :uprompts-date="task.prompts.data"
+                                        :panel-show="panelShow"
+                                      />
+                                      <el-tooltip
+                                        class="box-item"
+                                        effect="dark"
+                                        content="复制提示词组"
+                                        placement="right"
+                                      >
+                                        <el-button
+                                          type="primary"
+                                          size="small"
+                                          class="button-rt"
+                                          plain
+                                          @click="
+                                            () => {
+                                              copyTaskGroup = JSON.parse(
+                                                JSON.stringify(prompts_group)
+                                              );
+                                            }
+                                          "
+                                          :icon="CopyDocument"
+                                        ></el-button>
+                                      </el-tooltip>
+
+                                      <el-color-picker
+                                        v-if="colorPicker_status"
+                                        size="small"
+                                        v-model="prompts_group.color"
+                                        :predefine="predefineColors"
+                                        @click.stop
+                                        show-alpha
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </TransitionGroup>
                             </VueDraggable>
-                            <el-button-group style="display: flex; width: 100%">
+                            <el-button-group
+                              style="display: flex; width: 100%; margin-top: 1rem"
+                            >
                               <el-button
                                 type="primary"
                                 size="small"
@@ -909,9 +920,9 @@
 </template>
 
 <script setup>
+import AddArea from "./components/AddArea.vue";
 import PromptInput from "./components/PromptInput.vue";
 import {
-  Fold,
   CopyDocument,
   Odometer,
   EditPen,
@@ -1570,7 +1581,7 @@ const predefineColors = ref([
   border: var(--el-border-radius-round);
   position: fixed;
   top: 4vh;
-  z-index: 990;
+  z-index: 2000;
   background-color: white;
   border-radius: var(--el-border-radius-round);
   margin-left: 50%;
@@ -1593,7 +1604,7 @@ const predefineColors = ref([
     border: var(--el-border-radius-round);
     position: fixed;
     top: 4vh;
-    z-index: 990;
+    z-index: 2000;
     background-color: white;
     border-radius: var(--el-border-radius-round);
     margin-left: 50%;

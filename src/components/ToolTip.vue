@@ -5,7 +5,6 @@
     </el-tooltip>
 </template>
 <script setup>
-import { defineProps } from 'vue';
 import { QuestionFilled } from '@element-plus/icons-vue';
 
 const props = defineProps(['content']);

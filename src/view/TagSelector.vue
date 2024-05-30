@@ -80,6 +80,9 @@
           <el-button size="small" type="danger" plain @click.stop="clear_tags_selecter()"
             >清空</el-button
           >
+          <el-button size="small" type="success" plain @click.stop="read_from_clipboard()"
+            >从剪切板导入</el-button
+          >
           <div style="margin-left: auto"></div>
           <div
             class="button-group"
@@ -323,6 +326,17 @@ const clear_tags_selecter = () => {
   ElMessage({
     message: `已清空${length}个提示词`,
     type: "success",
+  });
+};
+const read_from_clipboard = async () => {
+  const text = await navigator.clipboard.readText();
+  text.split(/,|，|\n/).forEach((element) => {
+    const tag = element.trim();
+    selectedTags.value.push({
+      local: "",
+      raw: tag,
+      show: tag,
+    });
   });
 };
 const PRESETS_NAME = `${pluginConfig.name}_v${pluginConfig.userscript.version}_presets`;
@@ -652,7 +666,7 @@ const handleJsonFile = (event) => {
   border: var(--el-border-radius-round);
   position: fixed;
 
-  z-index: 991;
+  z-index: 2001;
   background-color: white;
   border-radius: var(--el-border-radius-round);
 }

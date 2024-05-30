@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from 'vue';
+import { ref } from 'vue';
 const props = defineProps(['taskIndex', 'task']);
 const input = ref(null);
 const edit = ref(false);
