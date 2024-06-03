@@ -5,24 +5,8 @@
 </style>
 
 <template>
-  <div
-    style="
-      display: flex;
-      position: fixed;
-      top: 0px;
-      right: 10vw;
-      height: 30px;
-      width: 60px;
-      flex-direction: row;
-      z-index: 2000;
-    "
-  >
-    <el-tooltip
-      class="box-item"
-      effect="dark"
-      content="Prompt-Tasks-Writer"
-      placement="bottom"
-    >
+  <div style="display: flex; position: fixed; top: 0px; right: 10vw; height: 30px; width: 60px; flex-direction: row; z-index: 2000">
+    <el-tooltip class="box-item" effect="dark" content="Prompt-Tasks-Writer" placement="bottom">
       <el-button
         @click.stop
         :class="{ showButton: progress.start && !progress.pause }"
@@ -32,17 +16,11 @@
         :style="{
           backgroundColor: __themeColor.textPrompt,
           borderColor: __themeColor.textPrompt,
-          color: __themeColor.bg1,
+          color: __themeColor.bg1
         }"
       />
     </el-tooltip>
-    <el-tooltip
-      class="box-item"
-      style=""
-      effect="dark"
-      content="Prompt-Tags-Writer"
-      placement="bottom"
-    >
+    <el-tooltip class="box-item" style="" effect="dark" content="Prompt-Tags-Writer" placement="bottom">
       <el-button
         @click.stop
         :icon="EditPen"
@@ -51,7 +29,7 @@
         :style="{
           backgroundColor: __themeColor.textPrompt,
           borderColor: __themeColor.textPrompt,
-          color: __themeColor.bg1,
+          color: __themeColor.bg1
         }"
       />
     </el-tooltip>
@@ -59,24 +37,11 @@
   <Transition>
     <el-container v-show="panelShow.show" :style="{}" class="pluginPanel" @click.stop>
       <el-header>
-        <el-menu
-          class="el-menu-demo"
-          mode="horizontal"
-          :ellipsis="false"
-          style="align-items: center"
-        >
-          <el-text class="mx-1" type="primary" size="large" :line-clamp="1"
-            >{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text
-          >
+        <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false" style="align-items: center">
+          <el-text class="mx-1" type="primary" size="large" :line-clamp="1">{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text>
 
           <div class="flex-grow"></div>
-          <el-button
-            type="danger"
-            plain
-            :icon="CloseBold"
-            @click="changeShow()"
-            :style="{ height: '30px', width: '30px' }"
-          />
+          <el-button type="danger" plain :icon="CloseBold" @click="changeShow()" :style="{ height: '30px', width: '30px' }" />
         </el-menu>
       </el-header>
       <el-main>
@@ -91,54 +56,26 @@
               <el-form label-width="9rem" style="max-width: 100%">
                 <el-form-item label="等待间隔：">
                   <el-space :size="15">
-                    <el-input-number
-                      style=""
-                      v-model="tasklist.cooling"
-                      :min="2"
-                      controls-position="right"
-                    />
+                    <el-input-number style="" v-model="tasklist.cooling" :min="2" controls-position="right" />
 
-                    <ToolTip
-                      :content="'1.每次生成图片前的等待时间<br /> 2.任务完成后，保存ZIP文件前的等待时间<br />单位：秒 最小2秒'"
-                    />
+                    <ToolTip :content="'1.每次生成图片前的等待时间<br /> 2.任务完成后，保存ZIP文件前的等待时间<br />单位：秒 最小2秒'" />
                   </el-space>
                 </el-form-item>
 
                 <el-form-item label="实时保存插件数据：">
                   <el-space :size="15">
-                    <el-switch
-                      v-model="tasklist.realTimeSave"
-                      inline-prompt
-                      :active-icon="Check"
-                      :inactive-icon="Close"
-                    />
+                    <el-switch v-model="tasklist.realTimeSave" inline-prompt :active-icon="Check" :inactive-icon="Close" />
 
-                    <el-button
-                      v-if="!tasklist.realTimeSave"
-                      type="primary"
-                      plain
-                      size="small"
-                      @click="manualSave()"
-                      >{{ manualSaveText }}</el-button
-                    >
+                    <el-button v-if="!tasklist.realTimeSave" type="primary" plain size="small" @click="manualSave()">{{ manualSaveText }}</el-button>
 
-                    <ToolTip
-                      :content="'开：修改插件中的任意数据，都立刻保存到localStroage中<br />关：修改插件中数据，不保存到localStroage中'"
-                    />
+                    <ToolTip :content="'开：修改插件中的任意数据，都立刻保存到localStroage中<br />关：修改插件中数据，不保存到localStroage中'" />
                   </el-space>
                 </el-form-item>
 
                 <el-form-item label="自动保存ZIP文件：">
                   <el-space :size="15">
-                    <el-switch
-                      v-model="tasklist.autoDownloadZIP"
-                      inline-prompt
-                      :active-icon="Check"
-                      :inactive-icon="Close"
-                    />
-                    <ToolTip
-                      :content="'任务结束后自动下载ZIP压缩包<br />（点击“终止并重置”导致任务未完成不会保存）<br />如需单独保存每张图片，请开启NovelAI自带的“Automatic Download”功能'"
-                    />
+                    <el-switch v-model="tasklist.autoDownloadZIP" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <ToolTip :content="'任务结束后自动下载ZIP压缩包<br />（点击“终止并重置”导致任务未完成不会保存）<br />如需单独保存每张图片，请开启NovelAI自带的“Automatic Download”功能'" />
                   </el-space>
                 </el-form-item>
 
@@ -163,41 +100,21 @@
 
                 <el-form-item label="禁用动画效果：">
                   <el-space :size="15">
-                    <el-switch
-                      v-model="tasklist.removeAnmition"
-                      inline-prompt
-                      :active-icon="Check"
-                      :inactive-icon="Close"
-                    />
-                    <ToolTip
-                      :content="'禁用生成图片时背景上的动画效果<br />可明显降低页面CPU占用并提高流畅度，建议开启'"
-                    />
+                    <el-switch v-model="tasklist.removeAnmition" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <ToolTip :content="'禁用生成图片时背景上的动画效果<br />可明显降低页面CPU占用并提高流畅度，建议开启'" />
                   </el-space>
                 </el-form-item>
 
                 <el-form-item label="启用颜色选择器：">
                   <el-space :size="15">
-                    <el-switch
-                      v-model="colorPicker_status"
-                      inline-prompt
-                      :active-icon="Check"
-                      :inactive-icon="Close"
-                    />
-                    <ToolTip
-                      :content="'启用后可以为标签组设置颜色<br>启用后导致non-passive Warning但不影响功能的使用，同时增加性能开销'"
-                    />
+                    <el-switch v-model="colorPicker_status" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <ToolTip :content="'启用后可以为标签组设置颜色<br>启用后导致non-passive Warning但不影响功能的使用，同时增加性能开销'" />
                   </el-space>
                 </el-form-item>
 
                 <el-form-item label="标签编辑器：">
                   <el-space :size="15">
-                    <el-button
-                      type="info"
-                      plain
-                      @click="tag_selector_status.show = true"
-                      size="small"
-                      >打开</el-button
-                    >
+                    <el-button type="info" plain @click="tag_selector_status.show = true" size="small">打开</el-button>
                     <ToolTip :content="'标签编辑器，测试功能'" />
                   </el-space>
                 </el-form-item>
@@ -207,54 +124,24 @@
           <el-divider border-style="dashed" />
           <div style="width: 99%">
             <TransitionGroup name="list" tag="div">
-              <div
-                v-for="(task, taskIndex) in tasklist.tasks"
-                :key="task.uuid"
-                class="textarea2button_container"
-                style="position: relative"
-              >
-                <el-card
-                  style="min-width: 600px"
-                  body-style="position: relative;"
-                  header-style=""
-                  shadow="hover"
-                >
+              <div v-for="(task, taskIndex) in tasklist.tasks" :key="task.uuid" class="textarea2button_container" style="position: relative">
+                <el-card style="min-width: 600px" body-style="position: relative;" header-style="" shadow="hover">
                   <template #header>
                     <div class="card-header" style="">
                       <TaskTitle :task="task" :taskIndex="taskIndex" />
 
-                      <div
-                        class="button-rt-container"
-                        style="flex-direction: row-reverse"
-                      >
-                        <el-button
-                          size="small"
-                          class="button-rt"
-                          plain
-                          @click="task.fold = !task.fold"
+                      <div class="button-rt-container" style="flex-direction: row-reverse">
+                        <el-button size="small" class="button-rt" plain @click="task.fold = !task.fold"
                           ><el-icon
                             :style="{
                               transition: 'transform 0.2s ease',
-                              transform: task.fold ? 'rotate(90deg)' : 'rotate(0deg)',
+                              transform: task.fold ? 'rotate(90deg)' : 'rotate(0deg)'
                             }"
                             ><ArrowDownBold /></el-icon
                         ></el-button>
 
-                        <el-tooltip
-                          class="box-item"
-                          effect="dark"
-                          :enterable="false"
-                          content="复制这一整个任务"
-                          placement="top-start"
-                        >
-                          <el-button
-                            type="info"
-                            size="small"
-                            class="button-rt"
-                            plain
-                            @click="copyTask(task, tasklist.tasks)"
-                            :icon="CopyDocument"
-                          ></el-button>
+                        <el-tooltip class="box-item" effect="dark" :enterable="false" content="复制这一整个任务" placement="top-start">
+                          <el-button type="info" size="small" class="button-rt" plain @click="copyTask(task, tasklist.tasks)" :icon="CopyDocument"></el-button>
                         </el-tooltip>
 
                         <div>
@@ -263,10 +150,7 @@
                             :tasks="tasklist.tasks"
                             :panelShow="panelShow"
                             :taskIndex="taskIndex"
-                            :disable="
-                              tasklist.tasks.length < 2 ||
-                              (activateTaskNum < 2 && task.activate == true)
-                            "
+                            :disable="tasklist.tasks.length < 2 || (activateTaskNum < 2 && task.activate == true)"
                           />
                         </div>
 
@@ -277,7 +161,7 @@
                           :style="{
                             transition: 'background-color 0.2s ease',
                             backgroundColor: task.activate ? '#d9ecff' : 'transparent',
-                            opacity: task.activate ? '1' : '0.56',
+                            opacity: task.activate ? '1' : '0.56'
                           }"
                           size="small"
                           border
@@ -288,37 +172,21 @@
                   </template>
 
                   <div v-show="task.fold" style="display: flex; justify-content: center">
-                    <el-button
-                      class="long_button"
-                      plain
-                      size="small"
-                      :icon="ArrowDownBold"
-                      @click.stop="task.fold = false"
-                    ></el-button>
+                    <el-button class="long_button" plain size="small" :icon="ArrowDownBold" @click.stop="task.fold = false"></el-button>
                   </div>
-                  <el-form
-                    :model="task"
-                    label-width="8rem"
-                    style="max-width: 100%"
-                    v-show="!task.fold"
-                  >
+                  <el-form :model="task" label-width="8rem" style="max-width: 100%" v-show="!task.fold">
                     <el-form-item label="提示词组合方式：">
                       <el-space :size="15">
                         <el-switch
                           v-model="task.random"
-                          style="
-                            --el-switch-on-color: #13ce66;
-                            --el-switch-off-color: #409eff;
-                          "
+                          style="--el-switch-on-color: #13ce66; --el-switch-off-color: #409eff"
                           :active-value="true"
                           :inactive-value="false"
                           active-text="随机"
                           inactive-text="轮询"
                         />
 
-                        <ToolTip
-                          :content="'轮询：从头依次选取反向提示词进行搭配<br />随机：随机抽取正反向提示词进行搭配'"
-                        />
+                        <ToolTip :content="'轮询：从头依次选取反向提示词进行搭配<br />随机：随机抽取正反向提示词进行搭配'" />
                       </el-space>
                     </el-form-item>
                     <el-form-item label="出图数量：">
@@ -329,21 +197,14 @@
                           <b>{{ count_task_prompts_num(task) }}</b>
                           个才能覆盖全部可能的提示词序列</el-text
                         >
-                        <ToolTip
-                          :content="'保证随机不重复的情况：<br>1.全部可能的序列不超过10000种<br>2.出图数量小于全部可能序列的20%<br>3.出图数量大于全部可能序列的80%'"
-                        />
+                        <ToolTip :content="'保证随机不重复的情况：<br>1.全部可能的序列不超过10000种<br>2.出图数量小于全部可能序列的20%<br>3.出图数量大于全部可能序列的80%'" />
                       </el-space>
                     </el-form-item>
                     <el-form-item label="尺寸设置：">
                       <el-space :size="15">
                         <ImageSizeInput :imageSize="task.size" />
 
-                        <el-text
-                          type="danger"
-                          tag="b"
-                          v-show="task.size.width * task.size.height > 1048576"
-                          >请注意点数消耗！</el-text
-                        >
+                        <el-text type="danger" tag="b" v-show="task.size.width * task.size.height > 1048576">请注意点数消耗！</el-text>
                       </el-space>
                     </el-form-item>
 
@@ -354,42 +215,22 @@
                             <el-space :size="15">
                               <el-switch
                                 v-model="task.prompts.splice"
-                                style="
-                                  --el-switch-on-color: #13ce66;
-                                  --el-switch-off-color: #409eff;
-                                "
+                                style="--el-switch-on-color: #13ce66; --el-switch-off-color: #409eff"
                                 :active-value="true"
                                 :inactive-value="false"
                                 active-text="拼接"
                                 inactive-text="完整"
-                                @click="
-                                  task.prompts.data = task.prompts.splice
-                                    ? [PromptsBuilder.newPromptGroup()]
-                                    : [PromptsBuilder.newPromptSplice()]
-                                "
+                                @click="task.prompts.data = task.prompts.splice ? [PromptsBuilder.newPromptGroup()] : [PromptsBuilder.newPromptSplice()]"
                               />
 
-                              <ToolTip
-                                :content="'完整：由多组正向提示词片段拼接成完整的提示词<br>拼接：从一组完整的正向提示词中选取'"
-                              />
+                              <ToolTip :content="'完整：由多组正向提示词片段拼接成完整的提示词<br>拼接：从一组完整的正向提示词中选取'" />
                             </el-space>
                           </el-form-item>
                           <el-form-item v-if="task.prompts.splice" label="抽取顺序：">
-                            <el-tooltip
-                              :enterable="false"
-                              :content="
-                                task.prompts.random
-                                  ? '从每组中随机抽取提示词片段'
-                                  : '从每组中按顺序选取提示词片段'
-                              "
-                              placement="right"
-                            >
+                            <el-tooltip :enterable="false" :content="task.prompts.random ? '从每组中随机抽取提示词片段' : '从每组中按顺序选取提示词片段'" placement="right">
                               <el-switch
                                 v-model="task.prompts.random"
-                                style="
-                                  --el-switch-on-color: #13ce66;
-                                  --el-switch-off-color: #409eff;
-                                "
+                                style="--el-switch-on-color: #13ce66; --el-switch-off-color: #409eff"
                                 :active-value="true"
                                 :inactive-value="false"
                                 active-text="随机"
@@ -407,37 +248,24 @@
                               style="width: 100%"
                               handle=".groups-handle"
                             >
-                              <TransitionGroup
-                                name="list"
-                                tag="div"
-                                style="width: 100%"
-                                class="prompts-groups"
-                              >
-                                <div
-                                  v-for="(prompts_group, index) in task.prompts.data"
-                                  :key="prompts_group.uuid"
-                                  style="width: 100%"
-                                >
-                                  <AddArea
-                                    :index="index"
-                                    :task_prompts="task.prompts"
-                                    :idKey="prompts_group.uuid"
-                                  />
-                                  <div
-                                    class="textarea2button_container"
-                                    style="margin-bottom: 0; position: relative"
-                                  >
+                              <TransitionGroup name="list" tag="div" style="width: 100%" class="prompts-groups">
+                                <div v-for="(prompts_group, index) in task.prompts.data" :key="prompts_group.uuid" style="width: 100%">
+                                  <AddArea :index="index" :task_prompts="task.prompts" :idKey="prompts_group.uuid" />
+                                  <div class="textarea2button_container" style="margin-bottom: 0; position: relative">
                                     <el-button
                                       :disabled="!(task.prompts.data.length > 1)"
                                       :icon="DCaret"
                                       class="groups-handle cursor-move button-small-square"
                                       size="small"
                                       :style="{
-                                        backgroundColor: prompts_group.color,
+                                        backgroundColor: prompts_group.color
                                       }"
                                     />
                                     <el-card
-                                      style="padding-right: 0.5rem"
+                                      :style="{
+                                        paddingRight: '0.5rem',
+                                        backgroundColor: prompts_group.ignore ? '#e4e7ed90' : 'white'
+                                      }"
                                       body-class="prompts-group-body"
                                       shadow="hover"
                                     >
@@ -449,96 +277,30 @@
                                         :animation="200"
                                         handle=".prompt-handle"
                                       >
-                                        <TransitionGroup
-                                          name="list"
-                                          tag="div"
-                                          class="prompts"
-                                        >
-                                          <div
-                                            v-for="(prompt, index) in prompts_group.data"
-                                            class="textarea2button_container"
-                                            :key="prompt.uuid"
-                                            style="position: relative"
-                                          >
-                                            <el-button
-                                              :disabled="!(prompts_group.data.length > 1)"
-                                              :icon="DCaret"
-                                              class="prompt-handle cursor-move button-small-square"
-                                              size="small"
-                                            />
+                                        <TransitionGroup name="list" tag="div" class="prompts">
+                                          <div v-for="(prompt, index) in prompts_group.data" class="textarea2button_container" :key="prompt.uuid" style="position: relative">
+                                            <el-button :disabled="!(prompts_group.data.length > 1)" :icon="DCaret" class="prompt-handle cursor-move button-small-square" size="small" />
 
-                                            <PromptInput
-                                              :prompt="prompt"
-                                              :prompts_group="prompts_group"
-                                              :index="index"
-                                            />
-                                            <!-- <div
-                                            v-if="!(prompts_group.data.length < 2)"
-                                            class="button-rt-container"
-                                          >
-                                            <el-button
-                                              type="danger"
-                                              size="small"
-                                              class="button-rt"
-                                              plain
-                                              @click="
-                                                () => {
-                                                  removechild(prompt, prompts_group.data);
-                                                  prompts_group.choices >
-                                                  prompts_group.data.length
-                                                    ? (prompts_group.choices =
-                                                        prompts_group.data.length)
-                                                    : pass;
-                                                }
-                                              "
-                                              :icon="Delete"
-                                            ></el-button>
-                                          </div> -->
+                                            <PromptInput :prompt="prompt" :prompts_group="prompts_group" :index="index" />
                                           </div>
                                         </TransitionGroup>
                                       </VueDraggable>
-                                      <div
-                                        style="
-                                          display: flex;
-                                          flex-direction: row;
-                                          line-height: normal;
-                                          justify-content: space-between;
-                                        "
-                                      >
-                                        <el-button
-                                          type="primary"
-                                          size="small"
-                                          @click="addPromptSplice(prompts_group.data)"
-                                          style=""
-                                          :icon="ArrowDownBold"
-                                        ></el-button>
-                                        <LoadPresets
-                                          :PRESETS="PRESETS"
-                                          :PRESETS_NAME="PRESETS_NAME"
-                                          :container="prompts_group.data"
-                                        />
+                                      <div style="display: flex; flex-direction: row; line-height: normal; justify-content: space-between">
+                                        <el-button type="primary" size="small" @click="addPromptSplice(prompts_group.data)" style="" :icon="ArrowDownBold"></el-button>
+                                        <LoadPresets :PRESETS="PRESETS" :PRESETS_NAME="PRESETS_NAME" :container="prompts_group.data" />
                                         <div style="margin-left: auto"></div>
                                         <div>
-                                          <el-space
-                                            :size="10"
-                                            :spacer="
-                                              h(ElDivider, { direction: 'vertical' })
-                                            "
-                                          >
+                                          <el-space :size="10" :spacer="h(ElDivider, { direction: 'vertical' })">
                                             <div>
-                                              <el-text class="mx-1" size="small"
-                                                >选取</el-text
-                                              >
+                                              <el-text class="mx-1" size="small">选取</el-text>
                                               <el-input-number
                                                 v-model="prompts_group.choices"
                                                 size="small"
                                                 style="width: 5rem"
                                                 :min="1"
-                                                :max="prompts_group.data.length"
+                                                :max="prompts_group.data.filter((prompt) => prompt.ignore != true).length"
                                               />
-                                              <el-text class="mx-1" size="small"
-                                                >个</el-text
-                                              >
+                                              <el-text class="mx-1" size="small">个</el-text>
                                             </div>
                                             <el-tooltip
                                               class="box-item"
@@ -548,11 +310,7 @@
                                               placement="top"
                                               :disabled="prompts_group.choices != 1"
                                             >
-                                              <el-radio-group
-                                                v-model="prompts_group.type"
-                                                size="small"
-                                                :disabled="prompts_group.choices == 1"
-                                              >
+                                              <el-radio-group v-model="prompts_group.type" size="small" :disabled="prompts_group.choices == 1">
                                                 <el-tooltip
                                                   class="box-item"
                                                   effect="dark"
@@ -561,10 +319,7 @@
                                                   placement="top"
                                                   :disabled="prompts_group.choices == 1"
                                                 >
-                                                  <el-radio-button
-                                                    label="排列"
-                                                    value="permutation"
-                                                  />
+                                                  <el-radio-button label="排列" value="permutation" />
                                                 </el-tooltip>
 
                                                 <el-tooltip
@@ -575,10 +330,7 @@
                                                   placement="top"
                                                   :disabled="prompts_group.choices == 1"
                                                 >
-                                                  <el-radio-button
-                                                    label="组合"
-                                                    value="combination"
-                                                  />
+                                                  <el-radio-button label="组合" value="combination" />
                                                 </el-tooltip>
                                               </el-radio-group>
                                             </el-tooltip>
@@ -587,17 +339,8 @@
                                       </div>
                                     </el-card>
                                     <div class="button-rt-container">
-                                      <DeleteButton
-                                        :uprompt="prompts_group"
-                                        :uprompts-date="task.prompts.data"
-                                        :panel-show="panelShow"
-                                      />
-                                      <el-tooltip
-                                        class="box-item"
-                                        effect="dark"
-                                        content="复制提示词组"
-                                        placement="right"
-                                      >
+                                      <DeleteButton :uprompt="prompts_group" :uprompts-date="task.prompts.data" :panel-show="panelShow" />
+                                      <el-tooltip class="box-item" effect="dark" content="复制提示词组" placement="right">
                                         <el-button
                                           type="primary"
                                           size="small"
@@ -605,45 +348,23 @@
                                           plain
                                           @click="
                                             () => {
-                                              copyTaskGroup = JSON.parse(
-                                                JSON.stringify(prompts_group)
-                                              );
+                                              copyTaskGroup = JSON.parse(JSON.stringify(prompts_group));
                                             }
                                           "
                                           :icon="CopyDocument"
                                         ></el-button>
                                       </el-tooltip>
+                                      <IgnoreButton :prompt_group="prompts_group" />
 
-                                      <el-color-picker
-                                        v-if="colorPicker_status"
-                                        size="small"
-                                        v-model="prompts_group.color"
-                                        :predefine="predefineColors"
-                                        @click.stop
-                                        show-alpha
-                                      />
+                                      <el-color-picker v-if="colorPicker_status" size="small" v-model="prompts_group.color" :predefine="predefineColors" @click.stop show-alpha />
                                     </div>
                                   </div>
                                 </div>
                               </TransitionGroup>
                             </VueDraggable>
-                            <el-button-group
-                              style="display: flex; width: 100%; margin-top: 1rem"
-                            >
-                              <el-button
-                                type="primary"
-                                size="small"
-                                plain
-                                @click="addPromptGroup(task.prompts.data)"
-                                :icon="ArrowDownBold"
-                                :style="{ width: '90%' }"
-                              ></el-button>
-                              <el-tooltip
-                                class="box-item"
-                                effect="dark"
-                                content="粘贴先前复制的提示词组到此处"
-                                placement="top"
-                              >
+                            <el-button-group style="display: flex; width: 100%; margin-top: 1rem">
+                              <el-button type="primary" size="small" plain @click="addPromptGroup(task.prompts.data)" :icon="ArrowDownBold" :style="{ width: '90%' }"></el-button>
+                              <el-tooltip class="box-item" effect="dark" content="粘贴先前复制的提示词组到此处" placement="top">
                                 <el-button
                                   type="success"
                                   size="small"
@@ -656,24 +377,11 @@
                               </el-tooltip>
                             </el-button-group>
                           </el-form-item>
-                          <el-form-item
-                            v-if="!task.prompts.splice"
-                            label="完整提示词组："
-                          >
+                          <el-form-item v-if="!task.prompts.splice" label="完整提示词组：">
                             <el-card style="display: inline-block" shadow="hover">
                               <TransitionGroup name="list" tag="div">
-                                <div
-                                  v-for="(prompt, index) in task.prompts.data"
-                                  class="textarea2button_container"
-                                  :key="prompt.uuid"
-                                  style="position: relative"
-                                >
-                                  <el-input
-                                    v-model="task.prompts.data[index].data"
-                                    :autosize="{ minRows: 2, maxRows: 4 }"
-                                    type="textarea"
-                                    placeholder="输入完整的提示词"
-                                  />
+                                <div v-for="(prompt, index) in task.prompts.data" class="textarea2button_container" :key="prompt.uuid" style="position: relative">
+                                  <el-input v-model="task.prompts.data[index].data" :autosize="{ minRows: 2, maxRows: 4 }" type="textarea" placeholder="输入完整的提示词" />
                                   <div class="button-rt-container">
                                     <el-button
                                       type="danger"
@@ -687,14 +395,7 @@
                                   </div>
                                 </div>
                               </TransitionGroup>
-                              <el-button
-                                type="primary"
-                                size="small"
-                                @click="addPrompt(task.prompts.data)"
-                                :icon="ArrowDownBold"
-                                plain
-                                :style="{ width: '100%' }"
-                              ></el-button>
+                              <el-button type="primary" size="small" @click="addPrompt(task.prompts.data)" :icon="ArrowDownBold" plain :style="{ width: '100%' }"></el-button>
                             </el-card>
                           </el-form-item>
                         </el-form>
@@ -702,23 +403,10 @@
                     </el-form-item>
 
                     <el-form-item label="反向提示词：">
-                      <!-- <el-card>
-                                                <el-form :model="task" label-width="0rem">
-                                                    <el-form-item label=""> -->
                       <el-card style="display: inline-block" shadow="hover">
                         <TransitionGroup name="list" tag="div">
-                          <div
-                            v-for="(uprompt, index) in task.uprompts.data"
-                            class="textarea2button_container"
-                            :key="uprompt.uuid"
-                            style="position: relative"
-                          >
-                            <el-input
-                              v-model="task.uprompts.data[index].data"
-                              :autosize="{ minRows: 2, maxRows: 4 }"
-                              type="textarea"
-                              placeholder="输入完整的反向提示词"
-                            />
+                          <div v-for="(uprompt, index) in task.uprompts.data" class="textarea2button_container" :key="uprompt.uuid" style="position: relative">
+                            <el-input v-model="task.uprompts.data[index].data" :autosize="{ minRows: 2, maxRows: 4 }" type="textarea" placeholder="输入完整的反向提示词" />
                             <div class="button-rt-container">
                               <el-button
                                 type="danger"
@@ -732,26 +420,14 @@
                             </div>
                           </div>
                         </TransitionGroup>
-                        <el-button
-                          type="primary"
-                          size="small"
-                          @click="addPromptSplice(task.uprompts.data)"
-                          :style="{ width: '100%', display: 'block' }"
-                          :icon="ArrowDownBold"
-                          plain
-                        ></el-button>
+                        <el-button type="primary" size="small" @click="addPromptSplice(task.uprompts.data)" :style="{ width: '100%', display: 'block' }" :icon="ArrowDownBold" plain></el-button>
                       </el-card>
-                      <!-- </el-form-item>
-                                                </el-form>
-                                            </el-card> -->
                     </el-form-item>
                   </el-form>
                 </el-card>
               </div>
             </TransitionGroup>
-            <el-button type="primary" @click="addTask()" :style="{ width: '100%' }"
-              >添加任务</el-button
-            >
+            <el-button type="primary" @click="addTask()" :style="{ width: '100%' }">添加任务</el-button>
           </div>
         </el-scrollbar>
         <!-- color="#FFA2FF" -->
@@ -774,16 +450,10 @@
             marginTop: '0.5rem',
             width: '100%',
             height: '50px',
-            borderRadius: 'var(--el-border-radius-base)',
+            borderRadius: 'var(--el-border-radius-base)'
           }"
         >
-          <el-button
-            type="warning"
-            :style="{ width: '50%', height: '100%', color: 'white' }"
-            @click="runTaskList()"
-            color="#4A6BFF"
-            v-show="!progress.start && progress.now == 0"
-          >
+          <el-button type="warning" :style="{ width: '50%', height: '100%', color: 'white' }" @click="runTaskList()" color="#4A6BFF" v-show="!progress.start && progress.now == 0">
             启动任务列表
           </el-button>
 
@@ -794,13 +464,7 @@
               () => {
                 progress.pause = true;
                 progress_duration = 0;
-                ELMess(
-                  '任务队列已暂停',
-                  'Success',
-                  '任务队列已暂停，但已发出的生成请求无法取消',
-                  'success',
-                  10
-                );
+                ELMess('任务队列已暂停', 'Success', '任务队列已暂停，但已发出的生成请求无法取消', 'success', 10);
               }
             "
             v-show="progress.start && !progress.pause"
@@ -834,13 +498,7 @@
                 progress.now = 0;
                 progress.pause = false;
                 progress.total = 0;
-                ELMess(
-                  '终止并重置队列',
-                  'Success',
-                  '任务队列已重置，但已发出的生成请求无法取消',
-                  'success',
-                  10
-                );
+                ELMess('终止并重置队列', 'Success', '任务队列已重置，但已发出的生成请求无法取消', 'success', 10);
               }
             "
             v-show="progress.start"
@@ -848,58 +506,18 @@
             终止并重置队列
           </el-button>
 
-          <el-button
-            type="primary"
-            :style="{ width: '25%', height: '100%', color: 'white' }"
-            @click="inportFromFile()"
-            color="#4CC2C2"
-          >
-            从文件导入任务队列
-          </el-button>
+          <el-button type="primary" :style="{ width: '25%', height: '100%', color: 'white' }" @click="inportFromFile()" color="#4CC2C2"> 从文件导入任务队列 </el-button>
 
-          <el-button
-            type="primary"
-            :style="{ width: '25%', height: '100%', color: 'white' }"
-            @click="download2file()"
-            color="#4CC2C2"
-          >
-            导出到文件
-          </el-button>
+          <el-button type="primary" :style="{ width: '25%', height: '100%', color: 'white' }" @click="download2file()" color="#4CC2C2"> 导出到文件 </el-button>
         </el-button-group>
-        <form
-          ref="json_form"
-          style="
-            display: none;
-            filter: alpha(opacity=0);
-            opacity: 0;
-            width: 0;
-            height: 0;
-            padding: 0;
-          "
-        >
-          <input
-            ref="json_file"
-            type="file"
-            accept=".json"
-            @change="handleJsonFile"
-            style="filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0"
-          />
+        <form ref="json_form" style="display: none; filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0">
+          <input ref="json_file" type="file" accept=".json" @change="handleJsonFile" style="filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0" />
         </form>
-        <el-dialog
-          v-model="inportJsonFileConfirm"
-          title="请选择从json文件中读取的任务队列的使用方式"
-          width="500"
-          center
-          style="border-radius: 8px"
-        >
+        <el-dialog v-model="inportJsonFileConfirm" title="请选择从json文件中读取的任务队列的使用方式" width="500" center style="border-radius: 8px">
           <template #footer>
             <div class="dialog-footer">
-              <el-button type="danger" @click="json_temp_to_taskList(false)"
-                >覆盖</el-button
-              >
-              <el-button type="primary" @click="json_temp_to_taskList(true)"
-                >追加</el-button
-              >
+              <el-button type="danger" @click="json_temp_to_taskList(false)">覆盖</el-button>
+              <el-button type="primary" @click="json_temp_to_taskList(true)">追加</el-button>
             </div>
           </template>
         </el-dialog>
@@ -912,53 +530,32 @@
     {{ STATUS }}
   </div> -->
   <Transition>
-    <TagSelector
-      v-show="tag_selector_status.show"
-      :tag_selector_status="tag_selector_status"
-    />
+    <TagSelector v-show="tag_selector_status.show" :tag_selector_status="tag_selector_status" />
   </Transition>
 </template>
 
 <script setup>
-import AddArea from "./components/AddArea.vue";
-import PromptInput from "./components/PromptInput.vue";
-import {
-  CopyDocument,
-  Odometer,
-  EditPen,
-  Close,
-  Check,
-  CloseBold,
-  ArrowDownBold,
-  Delete,
-  DCaret,
-  Edit,
-} from "@element-plus/icons-vue";
-import { ElDivider } from "element-plus";
-import DeleteButton from "@/components/DeleteButton.vue";
-import DeleteTask from "@/components/DeleteTask.vue";
-import ImageSizeInput from "@/components/ImageSizeInput.vue";
-import TaskTitle from "@/components/TaskTitle.vue";
-import ToolTip from "@/components/ToolTip.vue";
-import ConfirmButton from "@/components/ConfirmButton.vue";
-import { h, ref, reactive, toRaw, watch, onMounted, onUnmounted } from "vue";
-import {
-  Debug,
-  insert,
-  generate_promptList,
-  timeFormat,
-  PromptsBuilder,
-  count_task_prompts_num,
-  removechild,
-} from "@/pojo/NAIutils.js";
-import { setImageSettingSize, clickDownloadZIPButton } from "@/pojo/NovelPageUtil.ts";
-import { unsafeWindow } from "$";
-import { saveAs } from "file-saver";
-import { v4 as uuidv4 } from "uuid";
-import { VueDraggable } from "vue-draggable-plus";
-import pluginConfig from "/plugin.config.js";
-import TagSelector from "@/view/TagSelector.vue";
-import LoadPresets from "@/components/LoadPresets.vue";
+import AddArea from './components/AddArea.vue';
+import PromptInput from './components/PromptInput.vue';
+import { CopyDocument, Odometer, EditPen, Close, Check, CloseBold, ArrowDownBold, Delete, DCaret, Edit, Select, Hide } from '@element-plus/icons-vue';
+import { ElDivider } from 'element-plus';
+import DeleteButton from '@/components/DeleteButton.vue';
+import DeleteTask from '@/components/DeleteTask.vue';
+import ImageSizeInput from '@/components/ImageSizeInput.vue';
+import TaskTitle from '@/components/TaskTitle.vue';
+import ToolTip from '@/components/ToolTip.vue';
+import ConfirmButton from '@/components/ConfirmButton.vue';
+import { h, ref, reactive, toRaw, watch, onMounted, onUnmounted } from 'vue';
+import { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, removechild } from '@/pojo/NAIutils.js';
+import { setImageSettingSize, clickDownloadZIPButton } from '@/pojo/NovelPageUtil.ts';
+import { unsafeWindow } from '$';
+import { saveAs } from 'file-saver';
+import { v4 as uuidv4 } from 'uuid';
+import { VueDraggable } from 'vue-draggable-plus';
+import pluginConfig from '/plugin.config.js';
+import TagSelector from '@/view/TagSelector.vue';
+import LoadPresets from '@/components/LoadPresets.vue';
+import IgnoreButton from '@/components/IgnoreButton.vue';
 const colorPicker_status = ref(false);
 
 const PRESETS_NAME = `${pluginConfig.name}_v${pluginConfig.userscript.version}_presets`;
@@ -992,7 +589,7 @@ const progress = reactive({
   total: 0,
   pause: false,
   promptList: [],
-  percentage: 0,
+  percentage: 0
 });
 
 /**
@@ -1001,11 +598,11 @@ const progress = reactive({
 const GENERATING = reactive({
   REQUIESTING: false,
   BUTTON_ACTIVATE: false,
-  WAITING: false,
+  WAITING: false
 });
-const STATUS = ref("未开始");
+const STATUS = ref('未开始');
 
-const __themeColor = ref({ textPrompt: "", bg1: "" });
+const __themeColor = ref({ textPrompt: '', bg1: '' });
 
 /**
  * @description 插件面板显示状态
@@ -1014,15 +611,15 @@ const panelShow = reactive({ show: false });
 
 const copyTaskGroup = ref(null);
 const loadThemeColor = () => {
-  fetch("https://api.novelai.net/user/data", {
-    method: "GET",
+  fetch('https://api.novelai.net/user/data', {
+    method: 'GET',
     headers: {
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem("session")).auth_token}`,
-    },
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('session')).auth_token}`
+    }
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+        throw new Error('Network response was not ok ' + response.statusText);
       }
       return response.json();
     })
@@ -1033,45 +630,41 @@ const loadThemeColor = () => {
 
       console.debug(colors);
       const temp = {
-        bg0: "#000000",
-        bg1: "#02030B",
-        bg2: "#02030B",
-        bg3: "#1E2231",
-        textHeadings: "#71FFC3",
-        textMain: "#9B9EB8",
-        textHeadingsOptions: ["#F5F3C2", "#EC56A7", "#75CF67", "#9773FF"],
-        textMainOptions: ["#FFFFFF", "#E7FFE9", "#FFF9C8", "#A5C9FF"],
-        textDisabled: "rgba(155,158,184,0.56)",
-        textPlaceholder: "rgba(155,158,184,0.38)",
-        warning: "#ff3838",
-        textHighlight: "rgba(128, 129, 255, 0.4)",
-        textPrompt: "#71FFC3",
-        textUser: "#9B9EB8",
-        textEdit: "#7d84c3",
-        textAI: "#FFFFFF",
+        bg0: '#000000',
+        bg1: '#02030B',
+        bg2: '#02030B',
+        bg3: '#1E2231',
+        textHeadings: '#71FFC3',
+        textMain: '#9B9EB8',
+        textHeadingsOptions: ['#F5F3C2', '#EC56A7', '#75CF67', '#9773FF'],
+        textMainOptions: ['#FFFFFF', '#E7FFE9', '#FFF9C8', '#A5C9FF'],
+        textDisabled: 'rgba(155,158,184,0.56)',
+        textPlaceholder: 'rgba(155,158,184,0.38)',
+        warning: '#ff3838',
+        textHighlight: 'rgba(128, 129, 255, 0.4)',
+        textPrompt: '#71FFC3',
+        textUser: '#9B9EB8',
+        textEdit: '#7d84c3',
+        textAI: '#FFFFFF'
       };
     })
     .catch((error) => {
-      console.error("There has been a problem with your fetch operation:", error);
+      console.error('There has been a problem with your fetch operation:', error);
     });
 };
 loadThemeColor();
 window.onload = () => {
-  panelShow.show = localStorage.getItem("panelShow") == "false" ? false : true;
+  panelShow.show = localStorage.getItem('panelShow') == 'false' ? false : true;
 };
 
 const bodyClickCallback = (e) => {
   const deep2ndParentNode = findDeep2ndParentNode(e.target);
   // console.log(e, deep2ndParentNode);
 
-  if (
-    !deep2ndParentNode.getAttributeNames().includes("data-v-app") &&
-    !/el-popper/.test(deep2ndParentNode.id) &&
-    !["TEXTAREA", "BUTTON", "BODY"].includes(e.target.tagName)
-  ) {
+  if (!deep2ndParentNode.getAttributeNames().includes('data-v-app') && !/el-popper/.test(deep2ndParentNode.id) && !['TEXTAREA', 'BUTTON', 'BODY'].includes(e.target.tagName)) {
     if (panelShow.show) {
       panelShow.show = false;
-      localStorage.setItem("panelShow", panelShow.show);
+      localStorage.setItem('panelShow', panelShow.show);
     }
     if (tag_selector_status.show) {
       tag_selector_status.show = false;
@@ -1079,14 +672,14 @@ const bodyClickCallback = (e) => {
   }
 };
 onMounted(() => {
-  document.body.addEventListener("click", bodyClickCallback, {
+  document.body.addEventListener('click', bodyClickCallback, {
     capture: false,
     passive: false,
-    once: false,
+    once: false
   });
 });
 onUnmounted(() => {
-  document.body.removeEventListener("click", bodyClickCallback);
+  document.body.removeEventListener('click', bodyClickCallback);
 });
 
 /**
@@ -1128,13 +721,7 @@ const handleJsonFile = (event) => {
       });
       inportJsonFileConfirm.value = true;
     } catch (SyntaxError) {
-      ELMess(
-        `Json文件内容格式错误:${this.result}`,
-        "Error",
-        `Json文件内容格式错误！`,
-        "error",
-        5
-      );
+      ELMess(`Json文件内容格式错误:${this.result}`, 'Error', `Json文件内容格式错误！`, 'error', 5);
     }
     json_form.value.reset();
   };
@@ -1144,7 +731,7 @@ const handleJsonFile = (event) => {
  * @param {*} dom
  */
 function findDeep2ndParentNode(dom) {
-  if (dom && dom.parentNode && dom.parentNode.tagName != "BODY") {
+  if (dom && dom.parentNode && dom.parentNode.tagName != 'BODY') {
     return findDeep2ndParentNode(dom.parentNode);
   } else {
     return dom;
@@ -1156,7 +743,7 @@ const beforeChangeSlice = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
       changeSliceLoading.value = false;
-      ElMessage.success("Switch success");
+      ElMessage.success('Switch success');
       return resolve(true);
     }, 1000);
   });
@@ -1164,28 +751,24 @@ const beforeChangeSlice = () => {
 const progress_duration = ref(15);
 const changeShow = () => {
   panelShow.show = !panelShow.show;
-  localStorage.setItem("panelShow", panelShow.show);
+  localStorage.setItem('panelShow', panelShow.show);
 };
 const changeEditerShow = () => {
   tag_selector_status.show = !tag_selector_status.show;
 };
-const manualSaveText = ref("手动保存");
+const manualSaveText = ref('手动保存');
 const manualSave = () => {
-  localStorage.setItem("tasklist", JSON.stringify(toRaw(tasklist)));
-  manualSaveText.value = "保存成功";
+  localStorage.setItem('tasklist', JSON.stringify(toRaw(tasklist)));
+  manualSaveText.value = '保存成功';
   setTimeout(() => {
-    manualSaveText.value = "手动保存";
+    manualSaveText.value = '手动保存';
   }, 1000);
 };
 const removeTasklist = () => {
-  localStorage.removeItem("tasklist");
+  localStorage.removeItem('tasklist');
   location.reload();
 };
-const tasklist = reactive(
-  localStorage.getItem("tasklist") == null
-    ? PromptsBuilder.newTasklist()
-    : JSON.parse(localStorage.getItem("tasklist"))
-);
+const tasklist = reactive(localStorage.getItem('tasklist') == null ? PromptsBuilder.newTasklist() : JSON.parse(localStorage.getItem('tasklist')));
 watch(
   () => tasklist,
   (newValue, oldValue) => {
@@ -1249,9 +832,9 @@ const addPrompt = (item) => {
  * @description 将任务队列保存到json文件
  */
 const download2file = () => {
-  const time = new Date().toLocaleDateString("zh-CN", timeFormat);
+  const time = new Date().toLocaleDateString('zh-CN', timeFormat);
   const blob = new Blob([JSON.stringify(toRaw(tasklist))], {
-    type: "application/json",
+    type: 'application/json'
   });
   saveAs(blob, `NAI-Prompt-Linker v1.1.0 task ${time}.json`);
 };
@@ -1266,24 +849,16 @@ const inportFromFile = () => {
 const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLString) => {
   Debug(debugLog);
   ElNotification({
-    title: `${title} ${new Date().toLocaleDateString("zh-CN", timeFormat)}`,
+    title: `${title} ${new Date().toLocaleDateString('zh-CN', timeFormat)}`,
     message: message,
-    position: "bottom-right",
+    position: 'bottom-right',
     type: type,
     duration: duration ? 1000 * duration : 4500,
-    dangerouslyUseHTMLString: dangerouslyUseHTMLString ? dangerouslyUseHTMLString : false,
+    dangerouslyUseHTMLString: dangerouslyUseHTMLString ? dangerouslyUseHTMLString : false
   });
 };
 const generate_button = () => {
-  return document
-    .evaluate(
-      `//span[text()='Generate 1 Image']/following-sibling::div[1]`,
-      document.body,
-      null,
-      7,
-      null
-    )
-    .snapshotItem(0);
+  return document.evaluate(`//span[text()='Generate 1 Image']/following-sibling::div[1]`, document.body, null, 7, null).snapshotItem(0);
 };
 let intercepted = false;
 let button_observer;
@@ -1293,10 +868,10 @@ const runTaskList = async () => {
     constructor() {
       this.observer = new MutationObserver((mutationsList, observer) => {
         for (let mutation of mutationsList) {
-          if (mutation.type === "attributes") {
-            if (generate_button().getAttribute("disabled") === "") {
+          if (mutation.type === 'attributes') {
+            if (generate_button().getAttribute('disabled') === '') {
               GENERATING.BUTTON_ACTIVATE = false;
-            } else if (generate_button().getAttribute("disabled") === null) {
+            } else if (generate_button().getAttribute('disabled') === null) {
               GENERATING.BUTTON_ACTIVATE = true;
             }
           }
@@ -1307,15 +882,15 @@ const runTaskList = async () => {
       this.observer.disconnect();
     }
     connect() {
-      if (generate_button().getAttribute("disabled") === "") {
+      if (generate_button().getAttribute('disabled') === '') {
         GENERATING.BUTTON_ACTIVATE = false;
-      } else if (generate_button().getAttribute("disabled") === null) {
+      } else if (generate_button().getAttribute('disabled') === null) {
         GENERATING.BUTTON_ACTIVATE = true;
       }
       this.observer.observe(generate_button(), {
         attributes: true,
         childList: false,
-        subtree: false,
+        subtree: false
       });
     }
   }
@@ -1329,53 +904,29 @@ const runTaskList = async () => {
         unsafeWindow.fetch = async (...args) => {
           let [resource, config] = args;
 
-          if (
-            /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) &&
-            progress.start &&
-            config.method == "POST"
-          ) {
-            ELMess("generate-image请求发送", "Info", "生成请求已发送", "info");
+          if (/https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) && progress.start && config.method == 'POST') {
+            ELMess('generate-image请求发送', 'Info', '生成请求已发送', 'info');
             button_observer.connect();
             GENERATING.REQUIESTING = true;
           }
           let response;
           try {
             response = await this.originalFetch(resource, config);
-            if (
-              /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) &&
-              progress.start &&
-              config.method == "POST"
-            ) {
+            if (/https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) && progress.start && config.method == 'POST') {
               if (response.status == 200) {
-                ELMess(
-                  `generate-image响应成功 code: ${response.status}`,
-                  "Success",
-                  "生成图像成功",
-                  "success"
-                );
+                ELMess(`generate-image响应成功 code: ${response.status}`, 'Success', '生成图像成功', 'success');
                 progress.now += 1;
                 progress.percentage = (100 * progress.now) / progress.total;
                 GENERATING.REQUIESTING = false;
               } else if (response.status == 429) {
-                ELMess(
-                  `generate-image请求过于频繁，将暂停30秒后重复请求 code: ${response.status}`,
-                  "Error",
-                  `响应失败，请求过于频繁，将暂停30秒后重复请求`,
-                  "error",
-                  25
-                );
+                ELMess(`generate-image请求过于频繁，将暂停30秒后重复请求 code: ${response.status}`, 'Error', `响应失败，请求过于频繁，将暂停30秒后重复请求`, 'error', 25);
                 GENERATING.REQUIESTING = false;
                 GENERATING.WAITING = true;
                 setTimeout(() => {
                   GENERATING.WAITING = false;
                 }, 30000);
               } else {
-                ELMess(
-                  `generate-image响应失败，将重复此次的生成请求 code: ${response.status}`,
-                  "Error",
-                  `生成图像失败，将重复此次的生成请求`,
-                  "error"
-                );
+                ELMess(`generate-image响应失败，将重复此次的生成请求 code: ${response.status}`, 'Error', `生成图像失败，将重复此次的生成请求`, 'error');
                 GENERATING.REQUIESTING = false;
                 GENERATING.WAITING = true;
                 setTimeout(() => {
@@ -1385,12 +936,7 @@ const runTaskList = async () => {
             }
             return response;
           } catch (error) {
-            ELMess(
-              `generate-image无响应，将重复此次的生成请求 error: ${error}`,
-              "Error",
-              `无响应，将重复此次的生成请求`,
-              "error"
-            );
+            ELMess(`generate-image无响应，将重复此次的生成请求 error: ${error}`, 'Error', `无响应，将重复此次的生成请求`, 'error');
             GENERATING.REQUIESTING = false;
             GENERATING.WAITING = true;
             setTimeout(() => {
@@ -1400,7 +946,7 @@ const runTaskList = async () => {
         };
         intercepted = true;
       } else {
-        Debug("FetchInterceptor已启用，无需重复启用");
+        Debug('FetchInterceptor已启用，无需重复启用');
       }
     }
 
@@ -1439,8 +985,8 @@ watch(GENERATING, (newValue, oldValue) => {
     }
   }
 });
-const styleAnmition = document.createElement("style");
-styleAnmition.innerHTML = "#__next div.ePsgKP {display: none;}";
+const styleAnmition = document.createElement('style');
+styleAnmition.innerHTML = '#__next div.ePsgKP {display: none;}';
 watch(
   () => tasklist.removeAnmition,
   (status) => {
@@ -1462,10 +1008,10 @@ const next = async () => {
       `Info`,
       `延迟${tasklist.cooling}秒，下一个:
       <br>
-      ${prompt.substr(0, 20) + "..." + prompt.substr(-20, 20)}
+      ${prompt.substr(0, 20) + '...' + prompt.substr(-20, 20)}
       <br>
-      ${uprompt.substr(0, 20) + "..." + uprompt.substr(-20, 20)}`,
-      "info",
+      ${uprompt.substr(0, 20) + '...' + uprompt.substr(-20, 20)}`,
+      'info',
       4.5,
       true
     );
@@ -1479,22 +1025,7 @@ const next = async () => {
   }, 100);
 };
 
-const predefineColors = ref([
-  "#59C3FF",
-  "#4DFAFF",
-  "#45FFCC",
-  "#5BFF90",
-  "#9DFF62",
-  "#ECFF77",
-  "#FFE06C",
-  "#FFBC61",
-  "#FF8960",
-  "#FF6792",
-  "#F176FF",
-  "#AB85FF",
-  "#7B7DFF",
-  "#5EA7FF",
-]);
+const predefineColors = ref(['#59C3FF', '#4DFAFF', '#45FFCC', '#5BFF90', '#9DFF62', '#ECFF77', '#FFE06C', '#FFBC61', '#FF8960', '#FF6792', '#F176FF', '#AB85FF', '#7B7DFF', '#5EA7FF']);
 </script>
 
 <style scoped>
@@ -1576,8 +1107,7 @@ const predefineColors = ref([
 }
 
 .pluginPanel {
-  box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3),
-    0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
+  box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3), 0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
   border: var(--el-border-radius-round);
   position: fixed;
   top: 4vh;
@@ -1599,8 +1129,7 @@ const predefineColors = ref([
 
 @media screen and (max-width: 700px) {
   .pluginPanel {
-    box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3),
-      0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
+    box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3), 0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
     border: var(--el-border-radius-round);
     position: fixed;
     top: 4vh;
@@ -1635,8 +1164,8 @@ const predefineColors = ref([
 }
 
 .showButton::before {
-  content: "";
-  background-image: conic-gradient(v-bind("__themeColor.bg1") 20deg, transparent 120deg);
+  content: '';
+  background-image: conic-gradient(v-bind('__themeColor.bg1') 20deg, transparent 120deg);
   width: 130%;
   height: 130%;
   position: absolute;
