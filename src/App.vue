@@ -671,15 +671,31 @@ const bodyClickCallback = (e) => {
     }
   }
 };
+const visibilityState = ref(true);
+const handleVisiable = (e) => {
+  switch (e.target.visibilityState) {
+    case 'hidden':
+      console.log('内容不可见，处理后台、最小化、锁屏状态');
+      visibilityState.value = false;
+      break;
+    case 'visible':
+      console.log('处于正常打开');
+      visibilityState.value = true;
+      break;
+  }
+};
+
 onMounted(() => {
   document.body.addEventListener('click', bodyClickCallback, {
     capture: false,
     passive: false,
     once: false
   });
+  document.addEventListener('visibilitychange', handleVisiable);
 });
 onUnmounted(() => {
   document.body.removeEventListener('click', bodyClickCallback);
+  document.removeEventListener('visibilitychange', handleVisiable);
 });
 
 /**
@@ -846,16 +862,18 @@ const inportFromFile = () => {
   json_file.value.click();
 };
 
-const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLString) => {
+const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLString, visibilityState = true) => {
   Debug(debugLog);
-  ElNotification({
-    title: `${title} ${new Date().toLocaleDateString('zh-CN', timeFormat)}`,
-    message: message,
-    position: 'bottom-right',
-    type: type,
-    duration: duration ? 1000 * duration : 4500,
-    dangerouslyUseHTMLString: dangerouslyUseHTMLString ? dangerouslyUseHTMLString : false
-  });
+  if (visibilityState) {
+    ElNotification({
+      title: `${title} ${new Date().toLocaleDateString('zh-CN', timeFormat)}`,
+      message: message,
+      position: 'bottom-right',
+      type: type,
+      duration: duration ? 1000 * duration : 4500,
+      dangerouslyUseHTMLString: dangerouslyUseHTMLString ? dangerouslyUseHTMLString : false
+    });
+  }
 };
 const generate_button = () => {
   return document.evaluate(`//span[text()='Generate 1 Image']/following-sibling::div[1]`, document.body, null, 7, null).snapshotItem(0);
