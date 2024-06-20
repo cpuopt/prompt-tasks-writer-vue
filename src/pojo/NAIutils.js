@@ -117,7 +117,7 @@ const generate_promptList = (tasklist) => {
     let ppromptList = ((prompts) => {
       let li = [];
       let need = task.nums;
-
+      const prompts_random = prompts.random;
       if (prompts.splice) {
         const prompt_groups_tags = [];
         prompts.data
@@ -129,8 +129,7 @@ const generate_promptList = (tasklist) => {
             switch (prompt_group.type) {
               case 'permutation':
                 let permutation_choice_list;
-                if (prompts.random) {
-                  const choices = prompt_group.choices;
+                if (prompts_random) {
                   permutation_choice_list = StatisticsUtil.randomNPermutations(deconstructUUIDList(prompts), choices, need);
                 } else {
                   permutation_choice_list = StatisticsUtil.firstNPermutations(deconstructUUIDList(prompts), choices, need);
@@ -143,7 +142,7 @@ const generate_promptList = (tasklist) => {
 
               case 'combination':
                 let combination_choice_list;
-                if (prompts.random) {
+                if (prompts_random) {
                   combination_choice_list = StatisticsUtil.randomNCombinations(deconstructUUIDList(prompts), choices, need);
                 } else {
                   combination_choice_list = StatisticsUtil.firstNCombinations(deconstructUUIDList(prompts), choices, need);

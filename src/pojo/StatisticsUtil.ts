@@ -84,7 +84,7 @@ class StatisticsUtil {
     }
     static randomNPermutations<T>(arr: T[], k: number, count: number): T[][] {
         const total = this.permutationNum_bigint(arr.length, k);
-
+        
         const seen = new Set<string>();
 
         // 生成单个k元排列的函数
