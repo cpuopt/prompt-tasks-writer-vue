@@ -12,7 +12,7 @@
         </el-icon>
       </template>
     </el-input-number>
-    <el-icon>
+    <el-icon id="exchange-icon" @click.stop="exchangeSize()">
       <Close />
     </el-icon>
     <el-input-number style="width: 100px" v-model="props.imageSize.height" :min="64" :max="49152" :step="64" step-strictly controls-position="right">
@@ -128,6 +128,11 @@ const options = [
 ];
 const rawSize = options.flatMap((element) => element.options.map((option) => option.value));
 
+const exchangeSize = () => {
+  const [width, height] = selectSize.value.split('x');
+  props.imageSize.width = Number(height);
+  props.imageSize.height = Number(width);
+};
 const updateSelector = () => {
   const newSize = `${props.imageSize.width}x${props.imageSize.height}`;
   // 检查是否存在匹配的尺寸
@@ -144,3 +149,8 @@ const updateSize = () => {
   props.imageSize.height = Number(height);
 };
 </script>
+<style scoped>
+#exchange-icon:hover {
+  cursor: pointer;
+}
+</style>
