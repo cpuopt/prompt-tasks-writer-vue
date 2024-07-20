@@ -43,6 +43,7 @@ const props = defineProps(['imageSize']);
 watch(
   () => ({ ...props.imageSize }),
   (newValue, oldValue) => {
+    console.log(newValue, oldValue);
     const oldWidth = oldValue.width;
     const oldHeight = oldValue.height;
     const { width, height } = newValue;
@@ -129,7 +130,9 @@ const options = [
 const rawSize = options.flatMap((element) => element.options.map((option) => option.value));
 
 const exchangeSize = () => {
-  const [width, height] = selectSize.value.split('x');
+  const width = props.imageSize.width;
+  const height = props.imageSize.height;
+
   props.imageSize.width = Number(height);
   props.imageSize.height = Number(width);
 };

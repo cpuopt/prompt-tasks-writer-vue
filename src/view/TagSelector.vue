@@ -352,7 +352,7 @@ const PRESETS_load = () => {
 };
 onMounted(() => {
   PRESETS.prompts = PRESETS_load();
-  console.debug(PRESETS);
+  // console.debug(PRESETS);
 });
 const preset_input_status = ref(false);
 const preset_load_status = ref(false);

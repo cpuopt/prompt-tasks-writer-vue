@@ -15,8 +15,8 @@
     <el-tour-step target=".config-card .card-header .button-rt-container > button " title="折叠按钮" description="在这里控制插件配置面板的折叠与展开" />
     <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > button:nth-child(1) " title="折叠按钮" description="任务面板也可以折叠" />
     <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > button:nth-child(2) " title="复制该任务" description="复制这个任务，将插入到当前位置和下一个任务之间" />
-      <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > div:nth-child(3) " title="删除该任务" description="删除这个任务，当任务列表仅有一个任务时，删除按钮将被禁用" />
-        <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > label:nth-child(4) " title="启用/忽略该任务" description="至少要有一个已启用的任务，否则按钮将被禁用" />
+    <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > div:nth-child(3) " title="删除该任务" description="删除这个任务，当任务列表仅有一个任务时，删除按钮将被禁用" />
+    <el-tour-step target=".task-card:nth-child(1) .card-header .button-rt-container > label:nth-child(4) " title="启用/忽略该任务" description="至少要有一个已启用的任务，否则按钮将被禁用" />
 
     <!-- <el-tour-step target=".task-card:nth-child(1) form > div:nth-child(1)" title="提示词组合方式" description="轮询：从头依次选取反向提示词进行搭配随机：随机抽取正反向提示词进行搭配" /> -->
   </el-tour>
@@ -53,14 +53,16 @@
     <el-container v-show="panelShow.show" :style="{}" class="pluginPanel" @click.stop>
       <el-header>
         <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false" style="align-items: center">
-          <el-text class="mx-1" type="primary" size="large" :line-clamp="1">{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text>
+          <el-text class="plugin-title mx-1" type="primary" size="large" :line-clamp="1" @click="unsafeWindow.open(pluginConfig.userscript.namespace)"
+            >{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text
+          >
           <div class="flex-grow"></div>
           <el-icon style="cursor: pointer; margin-inline: 0.5rem" color="#a6a9ad80" size="20" @click="showTour()"><QuestionFilled /></el-icon>
 
           <el-button type="danger" plain :icon="CloseBold" @click="changeShow()" :style="{ height: '30px', width: '30px' }" />
         </el-menu>
       </el-header>
-      <el-main>
+      <el-main style="padding-bottom: 0.5rem">
         <el-scrollbar ref="TasksScrollbarRef">
           <div style="width: 99%">
             <el-card class="config-card" shadow="hover">
@@ -124,12 +126,34 @@
                   </el-space>
                 </el-form-item>
 
-                <el-form-item label="禁用动画效果：">
+                <el-form-item label="禁用线框动画：">
                   <el-space :size="15">
                     <el-switch v-model="tasklist.removeAnmition" inline-prompt :active-icon="Check" :inactive-icon="Close" />
-                    <ToolTip :content="'禁用生成图片时背景上的动画效果<br />可明显降低页面CPU占用并提高流畅度，建议开启'" />
+                    <ToolTip :content="'禁用生成图片时背景上的线框动画<br />可明显降低页面CPU占用并提高流畅度，建议开启'" />
                   </el-space>
                 </el-form-item>
+
+                <el-form-item label="禁用彩带动画：">
+                  <el-space :size="15">
+                    <el-switch v-model="tasklist.removeRunningAnmition" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <ToolTip :content="'拦截并禁用彩带动画的渲染函数，进一步减小性能开销<br /><br />测试功能，如遇bug请反馈'" />
+                  </el-space>
+                </el-form-item>
+
+                <el-form-item label="自动内存释放：">
+                  <el-space :size="15">
+                    <el-switch v-model="tasklist.blobMemoryRelease" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <ToolTip
+                      :content="'自动清理内存中的Blob ObjectURL 用于避免大批量生成图片导致的内存溢出<br />自动清理后将不能预览或下载先前生成的图片<br />所以请在开启NAI自带的自动下载 Automatic Download 的情况下使用 <br />  <br />测试功能，如遇bug请反馈'"
+                    />
+                  </el-space>
+                </el-form-item>
+
+                <!-- <el-form-item label="立即释放：">
+                  <el-space :size="15">
+                    <el-button type="info" plain @click="createObjectURLInterceptor.revokeAll()" size="small">立即释放</el-button>
+                  </el-space>
+                </el-form-item> -->
 
                 <el-form-item label="启用颜色选择器：">
                   <el-space :size="15">
@@ -167,7 +191,7 @@
                         ></el-button>
 
                         <!-- <el-tooltip class="box-item" effect="dark" :enterable="false" content="复制这一整个任务" placement="top-start"> -->
-                          <el-button type="info" size="small" class="button-rt" plain @click="copyTask(task, tasklist.tasks)" :icon="CopyDocument"></el-button>
+                        <el-button type="info" size="small" class="button-rt" plain @click="copyTask(task, tasklist.tasks)" :icon="CopyDocument"></el-button>
                         <!-- </el-tooltip> -->
 
                         <div>
@@ -457,6 +481,9 @@
           </div>
         </el-scrollbar>
         <!-- color="#FFA2FF" -->
+      </el-main>
+      <el-footer style="height: 80px; display: flex; flex-direction: column; padding-bottom: 1rem">
+        <el-divider style="width: 100%; height: 1px; border-bottom: 1px solid var(--el-menu-border-color)" />
         <el-progress
           :style="{ display: 'flex', marginTop: 'auto', width: '100%', height: '50px' }"
           :text-inside="true"
@@ -473,9 +500,9 @@
         <el-button-group
           :style="{
             display: 'flex',
-            marginTop: '0.5rem',
+            marginTop: 'auto',
             width: '100%',
-            height: '50px',
+            height: '35px',
             borderRadius: 'var(--el-border-radius-base)'
           }"
         >
@@ -547,7 +574,7 @@
             </div>
           </template>
         </el-dialog>
-      </el-main>
+      </el-footer>
     </el-container>
   </Transition>
   <!-- <div id="testJ" v-show="true" style="position: fixed; z-index: 5001">
@@ -584,6 +611,9 @@ import pluginConfig from '/plugin.config.js';
 import TagSelector from '@/view/TagSelector.vue';
 import LoadPresets from '@/components/LoadPresets.vue';
 import IgnoreButton from '@/components/IgnoreButton.vue';
+import { RequestAnimationFrameInterceptor } from '@/pojo/requestAnimationFrameInterceptor.js';
+import { CreateObjectURLInterceptor } from '@/pojo/createObjectURLInterceptor.js';
+
 const colorPicker_status = ref(false);
 const TasksScrollbarRef = ref();
 const PRESETS_NAME = `${pluginConfig.name}_v${pluginConfig.userscript.version}_presets`;
@@ -609,7 +639,7 @@ const PRESETS_load = () => {
 };
 onMounted(() => {
   PRESETS.prompts = PRESETS_load();
-  console.debug(PRESETS);
+  // console.debug(PRESETS);
 });
 
 const tag_selector_status = reactive({ show: false });
@@ -718,11 +748,11 @@ const visibilityState = ref(true);
 const handleVisiable = (e) => {
   switch (e.target.visibilityState) {
     case 'hidden':
-      console.log('内容不可见，处理后台、最小化、锁屏状态');
+      console.debug('visibilityState:', '内容不可见，处理后台、最小化、锁屏状态');
       visibilityState.value = false;
       break;
     case 'visible':
-      console.log('处于正常打开');
+      console.debug('visibilityState:', '处于正常打开');
       visibilityState.value = true;
       break;
   }
@@ -964,7 +994,7 @@ const runTaskList = async () => {
       if (intercepted == false) {
         unsafeWindow.fetch = async (...args) => {
           let [resource, config] = args;
-
+          console.log(resource);
           if (/https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) && progress.start && config.method == 'POST') {
             ELMess('generate-image请求发送', 'Info', '生成请求已发送', 'info');
             button_observer.connect();
@@ -1046,9 +1076,34 @@ watch(GENERATING, (newValue, oldValue) => {
     }
   }
 });
+watch(
+  () => tasklist.removeRunningAnmition,
+  (status) => {
+    if (status) {
+      RequestAnimationFrameInterceptor.disable();
+    } else {
+      RequestAnimationFrameInterceptor.stop();
+    }
+  },
+  { immediate: true }
+);
+const createObjectURLInterceptor = new CreateObjectURLInterceptor();
+watch(
+  () => tasklist.removeRunningAnmition,
+  (status) => {
+    if (status) {
+      createObjectURLInterceptor.record();
+    } else {
+      createObjectURLInterceptor.stop();
+    }
+  },
+  { immediate: true }
+);
+
 const styleAnmition = document.createElement('style');
-styleAnmition.innerHTML =
-  "#__next  div[style^='display: flex; flex-direction: column; flex: 1 1 0px; overflow: auto;'] div[style^='position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;'] {display: none;}";
+styleAnmition.innerHTML = `#__next  div[style^='display: flex; flex-direction: column; flex: 1 1 0px; overflow: auto;'] div[style^='position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;'] ,
+  #__next  div[style^='display: flex; flex-direction: column; flex: 1 1 0px; overflow: auto;'] > div:nth-child(2) > div:not([style])
+   {display: none;}`;
 watch(
   () => tasklist.removeAnmition,
   (status) => {
@@ -1077,6 +1132,9 @@ const next = async () => {
       4.5,
       true
     );
+    if (tasklist.removeRunningAnmition) {
+      createObjectURLInterceptor.revokePercentage(0.1);
+    }
     setTimeout(async () => {
       setImageSettingSize(size.width, size.height);
 
@@ -1276,6 +1334,13 @@ const predefineColors = ref(['#59C3FF', '#4DFAFF', '#45FFCC', '#5BFF90', '#9DFF6
 }
 .long_button {
   min-width: 98%;
+}
+.plugin-title {
+  transition: color ease 0.2s;
+}
+.plugin-title:hover {
+  cursor: pointer;
+  color: #a0cfff;
 }
 </style>
 

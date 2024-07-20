@@ -251,6 +251,8 @@ class PromptsBuilder {
       realTimeSave: true,
       autoDownloadZIP: false,
       removeAnmition: false,
+      removeRunningAnmition: false,
+      blobMemoryRelease: false,
       tasks: [this.newTask()]
     };
   }
