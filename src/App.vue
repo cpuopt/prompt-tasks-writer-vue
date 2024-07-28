@@ -1089,7 +1089,7 @@ watch(
 );
 const createObjectURLInterceptor = new CreateObjectURLInterceptor();
 watch(
-  () => tasklist.removeRunningAnmition,
+  () => tasklist.blobMemoryRelease,
   (status) => {
     if (status) {
       createObjectURLInterceptor.record();
@@ -1132,7 +1132,7 @@ const next = async () => {
       4.5,
       true
     );
-    if (tasklist.removeRunningAnmition) {
+    if (tasklist.blobMemoryRelease) {
       createObjectURLInterceptor.revokePercentage(0.1);
     }
     setTimeout(async () => {
