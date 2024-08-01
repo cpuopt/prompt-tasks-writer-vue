@@ -187,7 +187,6 @@ class StatisticsUtil {
         if (total < 10000 || count > (total / BigInt(10)) * BigInt(8)) {
             return this.shuffle(this.combinations(arr, k)).splice(0, count);
         } else if (count < total / BigInt(5)) {
-            console.log('生成不重复的排列，直到达到所需数量');
             // 生成不重复的排列，直到达到所需数量
             const result: T[][] = [];
             while (result.length < count) {

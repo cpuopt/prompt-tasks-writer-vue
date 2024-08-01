@@ -403,7 +403,6 @@ const PRESETS_CHANGE = (value) => {
 const copy_tags_selecter = async () => {
   const prompt = selectedTagsString(selectedTags.value);
   const length = selectedTags.value.length;
-  console.log();
   try {
     await navigator.clipboard.writeText(prompt);
     ElMessage({
@@ -468,7 +467,7 @@ const inportFromFile = () => {
 };
 const tags = reactive({ value: T.TAGS() });
 watch(tags, (tags) => {
-  console.log(tags);
+  // console.log(tags);
   add_tag_status.value = false;
   topOptions.value = Array.from(tags.value.keys());
   if (topChoice.value.length > 0) {

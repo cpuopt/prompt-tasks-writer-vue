@@ -3,6 +3,7 @@ import 'hacktimer';
 import '@/style.css';
 import App from '@/App.vue';
 import { unsafeWindow } from '$';
+
 // import 'default-passive-events'
 
 unsafeWindow.confirm = function () {

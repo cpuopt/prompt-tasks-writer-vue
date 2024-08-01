@@ -20,7 +20,7 @@
 
     <!-- <el-tour-step target=".task-card:nth-child(1) form > div:nth-child(1)" title="提示词组合方式" description="轮询：从头依次选取反向提示词进行搭配随机：随机抽取正反向提示词进行搭配" /> -->
   </el-tour>
-  <div style="display: flex; position: fixed; top: 0px; right: 10vw; height: 30px; width: 60px; flex-direction: row; z-index: 2000">
+  <div style="display: flex; position: fixed; top: 0px; right: 20vw; height: 30px; width: 60px; flex-direction: row; z-index: 2000">
     <el-tooltip class="box-item" effect="dark" content="Prompt-Tasks-Writer" placement="bottom">
       <el-button
         @click.stop
@@ -48,9 +48,22 @@
         }"
       />
     </el-tooltip>
+    <el-tooltip v-if="IMPORTMASK_SHOW" class="box-item" style="" effect="dark" content="Import mask" placement="bottom">
+      <el-button
+        @click.stop
+        :icon="FolderOpened"
+        @click="inportPNGFile()"
+        class="plugin-switch"
+        :style="{
+          backgroundColor: __themeColor.textPrompt,
+          borderColor: __themeColor.textPrompt,
+          color: __themeColor.bg1
+        }"
+      />
+    </el-tooltip>
   </div>
   <Transition>
-    <el-container v-show="panelShow.show" :style="{}" class="pluginPanel" @click.stop>
+    <el-container v-show="panelShow.show" :style="{}" class="pluginPanel" @click.stop @pointerdown.stop @wheel.stop>
       <el-header>
         <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false" style="align-items: center">
           <el-text class="plugin-title mx-1" type="primary" size="large" :line-clamp="1" @click="unsafeWindow.open(pluginConfig.userscript.namespace)"
@@ -168,6 +181,24 @@
                     <ToolTip :content="'标签编辑器，测试功能'" />
                   </el-space>
                 </el-form-item>
+
+                <!-- <el-form-item label="测试canvas：">
+                  <el-space :size="15">
+                    <el-button
+                      type="info"
+                      plain
+                      @click="
+                        () => {
+                          cic.download(cic.offscreenCanvas);
+                        }
+                      "
+                      size="small"
+                      >测试下载</el-button
+                    >
+                    <el-button type="info" plain @click="inportPNGFile()" size="small">测试从文件加载遮罩</el-button>
+                    <ToolTip :content="'标签编辑器，测试功能'" />
+                  </el-space>
+                </el-form-item> -->
               </el-form>
             </el-card>
           </div>
@@ -566,6 +597,9 @@
         <form ref="json_form" style="display: none; filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0">
           <input ref="json_file" type="file" accept=".json" @change="handleJsonFile" style="filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0" />
         </form>
+        <form ref="png_form" style="display: none; filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0">
+          <input ref="png_file" type="file" accept=".png" @change="handlePNGFile" style="filter: alpha(opacity=0); opacity: 0; width: 0; height: 0; padding: 0" />
+        </form>
         <el-dialog v-model="inportJsonFileConfirm" title="请选择从json文件中读取的任务队列的使用方式" width="500" center style="border-radius: 8px">
           <template #footer>
             <div class="dialog-footer">
@@ -592,7 +626,7 @@ import { QuestionFilled } from '@element-plus/icons-vue';
 
 import AddArea from './components/AddArea.vue';
 import PromptInput from './components/PromptInput.vue';
-import { CopyDocument, Odometer, EditPen, Close, Check, CloseBold, ArrowDownBold, Delete, DCaret, Edit, Select, Hide } from '@element-plus/icons-vue';
+import { CopyDocument, Odometer, EditPen, Close, Check, CloseBold, ArrowDownBold, Delete, DCaret, Edit, Select, Hide, FolderOpened } from '@element-plus/icons-vue';
 import { ElDivider } from 'element-plus';
 import DeleteButton from '@/components/DeleteButton.vue';
 import DeleteTask from '@/components/DeleteTask.vue';
@@ -613,12 +647,13 @@ import LoadPresets from '@/components/LoadPresets.vue';
 import IgnoreButton from '@/components/IgnoreButton.vue';
 import { RequestAnimationFrameInterceptor } from '@/pojo/requestAnimationFrameInterceptor.js';
 import { CreateObjectURLInterceptor } from '@/pojo/createObjectURLInterceptor.js';
+import { CanvasInterceptor } from '@/pojo/canvasInterceptor.js';
 
 const colorPicker_status = ref(false);
 const TasksScrollbarRef = ref();
 const PRESETS_NAME = `${pluginConfig.name}_v${pluginConfig.userscript.version}_presets`;
 const PRESETS = reactive({ prompts: [] });
-
+const IMPORTMASK_SHOW = ref(false);
 const CONFIG_SHOW = ref(true);
 const TOUR = ref(false);
 const showTour = () => {
@@ -696,7 +731,7 @@ const loadThemeColor = () => {
       __themeColor.value.textPrompt = colors.textPrompt;
       __themeColor.value.bg1 = colors.bg1;
 
-      console.debug(colors);
+      console.debug('加载当前主题色', colors);
       const temp = {
         bg0: '#000000',
         bg1: '#02030B',
@@ -717,7 +752,7 @@ const loadThemeColor = () => {
       };
     })
     .catch((error) => {
-      console.error('There has been a problem with your fetch operation:', error);
+      console.error('加载主题色失败:', error);
     });
 };
 loadThemeColor();
@@ -752,7 +787,7 @@ const handleVisiable = (e) => {
       visibilityState.value = false;
       break;
     case 'visible':
-      console.debug('visibilityState:', '处于正常打开');
+      console.debug('visibilityState:', '正常打开状态');
       visibilityState.value = true;
       break;
   }
@@ -815,6 +850,43 @@ const handleJsonFile = (event) => {
     json_form.value.reset();
   };
 };
+const cic = new CanvasInterceptor();
+
+const png_form = ref();
+const handlePNGFile = (event) => {
+  const drawCanvas = document.querySelector('#__next >div > div>div>div>div> canvas#canvas[draggable="false"]');
+  const hideCanvasHeight = drawCanvas.getAttribute('height') / 8;
+  const hideCanvasWidth = drawCanvas.getAttribute('width') / 8;
+  // console.log(hideCanvasWidth, hideCanvasHeight);
+  cic.interceptOffscreenCanvas(hideCanvasWidth, hideCanvasHeight);
+
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  const image = new Image();
+  reader.readAsDataURL(file);
+  reader.onload = function () {
+    image.onload = () => {
+      if (image.width === hideCanvasWidth && image.height === hideCanvasHeight) {
+        setTimeout(() => {
+          cic.draw(image);
+          cic.stop();
+        }, 100);
+      } else {
+        ELMess(
+          `遮罩导入失败，遮罩与源图像尺寸不匹配\n源图像需要的遮罩尺寸: ${hideCanvasWidth}x${hideCanvasHeight}\n遮罩尺寸: ${image.width}x${image.height}`,
+          'Error',
+          `遮罩导入失败，遮罩与源图像尺寸不匹配`,
+          'error',
+          5
+        );
+      }
+
+      png_form.value.reset();
+    };
+    image.src = this.result;
+  };
+};
+
 /**
  * @description 返回元素最接近body的父节点
  * @param {*} dom
@@ -935,9 +1007,15 @@ const inportFromFile = () => {
   json_file.value.click();
 };
 
-const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLString, visibilityState = true) => {
+const png_file = ref();
+
+const inportPNGFile = () => {
+  png_file.value.click();
+};
+
+const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLString) => {
   Debug(debugLog);
-  if (visibilityState) {
+  if (visibilityState.value) {
     ElNotification({
       title: `${title} ${new Date().toLocaleDateString('zh-CN', timeFormat)}`,
       message: message,
@@ -994,7 +1072,7 @@ const runTaskList = async () => {
       if (intercepted == false) {
         unsafeWindow.fetch = async (...args) => {
           let [resource, config] = args;
-          console.log(resource);
+          // console.log(resource);
           if (/https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) && progress.start && config.method == 'POST') {
             ELMess('generate-image请求发送', 'Info', '生成请求已发送', 'info');
             button_observer.connect();
@@ -1146,6 +1224,25 @@ const next = async () => {
 };
 
 const predefineColors = ref(['#59C3FF', '#4DFAFF', '#45FFCC', '#5BFF90', '#9DFF62', '#ECFF77', '#FFE06C', '#FFBC61', '#FF8960', '#FF6792', '#F176FF', '#AB85FF', '#7B7DFF', '#5EA7FF']);
+
+class InpaintObserver {
+  constructor() {
+    const ob = new MutationObserver((mutationsList, observer) => {
+      const canvas = document.querySelector('#__next >div > div>div>div>div> canvas#canvas[draggable="false"]');
+      if (canvas !== null) {
+        IMPORTMASK_SHOW.value = true;
+      } else {
+        IMPORTMASK_SHOW.value = false;
+      }
+    });
+    ob.observe(document.getElementById('__next'), {
+      attributes: false,
+      childList: true,
+      subtree: true
+    });
+  }
+}
+const canvasOb = new InpaintObserver();
 </script>
 
 <style scoped>

@@ -43,7 +43,7 @@ const props = defineProps(['imageSize']);
 watch(
   () => ({ ...props.imageSize }),
   (newValue, oldValue) => {
-    console.log(newValue, oldValue);
+    // console.log(newValue, oldValue);
     const oldWidth = oldValue.width;
     const oldHeight = oldValue.height;
     const { width, height } = newValue;

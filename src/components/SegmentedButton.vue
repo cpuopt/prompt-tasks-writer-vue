@@ -30,7 +30,7 @@
         plain
         @click.stop="
           () => {
-            console.log('edit_class');
+            // console.log('edit_class');
             edit_class();
           }
         "

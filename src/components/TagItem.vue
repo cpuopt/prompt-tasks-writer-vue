@@ -122,7 +122,7 @@ const delayLoseFocus = () => {
   }, 100);
 };
 const delete_tag = () => {
-  console.log(props.tags);
+  // console.log(props.tags);
   loseFocus();
   const index = props.tags.findIndex((item) => item.raw === props.tag.raw);
   if (index > -1) {

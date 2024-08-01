@@ -66,7 +66,7 @@ const updateTagShow = () => {
     props.tag.show = props.tag.raw;
   }
 
-  console.log(props.tag.show, weight);
+  // console.log(props.tag.show, weight);
 };
 const increaseWeighted = () => {
   props.tag.weight += 1;
