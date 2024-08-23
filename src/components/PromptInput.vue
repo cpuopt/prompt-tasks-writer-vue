@@ -11,7 +11,16 @@
       }"
     />
     <div class="button-rt-container">
-      <el-button v-if="foucsed" :disabled="prompts_group.data.length < 2||(prompts_group.data.length <= inignored + 1 && !prompt.ignore)" type="danger" size="small" class="button-rt" plain @click="remove(prompt, prompts_group)" :icon="Delete"></el-button>
+      <el-button
+        v-if="foucsed"
+        :disabled="prompts_group.data.length < 2 || (prompts_group.data.length <= inignored + 1 && !prompt.ignore)"
+        type="danger"
+        size="small"
+        class="button-rt"
+        plain
+        @click="remove(prompt, prompts_group)"
+        :icon="Delete"
+      ></el-button>
       <el-button
         v-if="foucsed"
         :disabled="prompts_group.data.length <= inignored + 1 && !prompt.ignore"
@@ -49,11 +58,16 @@ const switchIgnore = () => {
     props.prompt.ignore = false;
   } else {
     props.prompt.ignore = true;
+    calcNotIgnore(props.prompts_group);
   }
 };
 const remove = (prompt, prompts_group) => {
   removechild(prompt, prompts_group.data);
   if (prompts_group.choices > prompts_group.data.length) prompts_group.choices = prompts_group.data.length;
+};
+const calcNotIgnore = (prompts_group) => {
+  const not_ignore_num = prompts_group.data.filter((prompt) => prompt.ignore == false).length;
+  if (prompts_group.choices > not_ignore_num) prompts_group.choices = not_ignore_num;
 };
 const foucsed = ref(false);
 // var timer;

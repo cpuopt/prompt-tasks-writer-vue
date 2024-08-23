@@ -727,29 +727,37 @@ const loadThemeColor = () => {
       return response.json();
     })
     .then((data) => {
-      const colors = JSON.parse(data.settings).siteTheme.colors;
-      __themeColor.value.textPrompt = colors.textPrompt;
-      __themeColor.value.bg1 = colors.bg1;
+      const settings = JSON.parse(data.settings);
+      if (settings.hasOwnProperty('siteTheme')) {
+        const colors = settings.siteTheme.colors;
+        __themeColor.value.textPrompt = colors.textPrompt;
+        __themeColor.value.bg1 = colors.bg1;
 
-      console.debug('加载当前主题色', colors);
-      const temp = {
-        bg0: '#000000',
-        bg1: '#02030B',
-        bg2: '#02030B',
-        bg3: '#1E2231',
-        textHeadings: '#71FFC3',
-        textMain: '#9B9EB8',
-        textHeadingsOptions: ['#F5F3C2', '#EC56A7', '#75CF67', '#9773FF'],
-        textMainOptions: ['#FFFFFF', '#E7FFE9', '#FFF9C8', '#A5C9FF'],
-        textDisabled: 'rgba(155,158,184,0.56)',
-        textPlaceholder: 'rgba(155,158,184,0.38)',
-        warning: '#ff3838',
-        textHighlight: 'rgba(128, 129, 255, 0.4)',
-        textPrompt: '#71FFC3',
-        textUser: '#9B9EB8',
-        textEdit: '#7d84c3',
-        textAI: '#FFFFFF'
-      };
+        console.debug('加载当前主题色', colors);
+      } else {
+        console.debug('当前无主题设置，使用默认颜色');
+        __themeColor.value.textPrompt = '#F5F3C2';
+        __themeColor.value.bg1 = '#13152C';
+      }
+
+      // const theme_example = {
+      //   bg0: '#000000',
+      //   bg1: '#02030B',
+      //   bg2: '#02030B',
+      //   bg3: '#1E2231',
+      //   textHeadings: '#71FFC3',
+      //   textMain: '#9B9EB8',
+      //   textHeadingsOptions: ['#F5F3C2', '#EC56A7', '#75CF67', '#9773FF'],
+      //   textMainOptions: ['#FFFFFF', '#E7FFE9', '#FFF9C8', '#A5C9FF'],
+      //   textDisabled: 'rgba(155,158,184,0.56)',
+      //   textPlaceholder: 'rgba(155,158,184,0.38)',
+      //   warning: '#ff3838',
+      //   textHighlight: 'rgba(128, 129, 255, 0.4)',
+      //   textPrompt: '#71FFC3',
+      //   textUser: '#9B9EB8',
+      //   textEdit: '#7d84c3',
+      //   textAI: '#FFFFFF'
+      // };
     })
     .catch((error) => {
       console.error('加载主题色失败:', error);
