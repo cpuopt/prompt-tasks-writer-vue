@@ -83,8 +83,8 @@ class StatisticsUtil {
         return result;
     }
     static randomNPermutations<T>(arr: T[], k: number, count: number): T[][] {
-        const total = this.permutationNum_bigint(arr.length, k);
-        
+        const total = this.permutationNum_bigint(k, arr.length);
+
         const seen = new Set<string>();
 
         // 生成单个k元排列的函数
@@ -166,7 +166,7 @@ class StatisticsUtil {
     }
 
     static randomNCombinations<T>(arr: T[], k: number, count: number): T[][] {
-        const total = this.combinationNum_bigint(arr.length, k);
+        const total = this.combinationNum_bigint(k, arr.length);
         const seen = new Set<string>();
 
         // 生成单个k元组合的函数
