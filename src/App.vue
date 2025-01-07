@@ -1315,6 +1315,16 @@ const json_temp_to_taskList = (append) => {
   } else {
     tasklist.tasks.splice(0, tasklist.tasks.length);
     tasklist.tasks.push(...json_temp_taskList.tasks);
+    tasklist.tasks.forEach((task) => {
+      if (task.size.width != undefined) {
+        task.size = {
+          1: {
+            width: task.size.width,
+            height: task.size.height,
+          },
+        };
+      }
+    });
     PromptsBuilder.addMissingProperties(tasklist);
   }
   inportJsonFileConfirm.value = false;
@@ -1744,7 +1754,6 @@ watch(
 const next = async () => {
   let { prompt, uprompt, size } = progress.promptList[progress.now];
   size = size["1"];
-
 
   setTimeout(async () => {
     ELMess(
