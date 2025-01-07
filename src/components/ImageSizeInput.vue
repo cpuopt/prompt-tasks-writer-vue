@@ -39,6 +39,7 @@
 import { Close, Minus, Plus } from '@element-plus/icons-vue';
 import { watch, ref } from 'vue';
 const props = defineProps(['imageSize']);
+console.log(props.imageSize);
 
 watch(
   () => ({ ...props.imageSize }),

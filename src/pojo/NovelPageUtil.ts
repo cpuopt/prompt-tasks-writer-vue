@@ -28,7 +28,18 @@ const _setReactNativeValue = (el: ReactHTMLInputElement, value: string): void =>
     }
     el.dispatchEvent(new Event('change', { bubbles: true }));
 };
-
+/**
+ * 2025.1.8 适配novelai更新
+ * @param el
+ * @param value
+ */
+const __setDivPvalue = (el: HTMLElement, value: string) => {
+    el.innerText = value;
+    setTimeout(() => {
+        el.focus();
+        el.blur();
+    }, opInterval / 2);
+};
 /**
  * @description 设置 React textarea 内容并触发更新
  * @param {ReactHTMLInputElement} area
@@ -60,10 +71,14 @@ const insertPrompt = async (prompt: string) => {
                 Prompt_button.click();
             }
             setTimeout(() => {
-                _setReactNativeValue(document.querySelector("textarea[placeholder='Write your prompt here. Use tags to sculpt your outputs.']")!, prompt);
-            }, opInterval);
-
-            resolve();
+                const target = document.querySelectorAll('div[contenteditable]>p') as NodeListOf<HTMLElement>;
+                if (target.length == 2) {
+                    __setDivPvalue(document.querySelectorAll('div[contenteditable]>p')[0] as HTMLElement, prompt);
+                } else {
+                    __setDivPvalue(document.querySelectorAll('div[contenteditable]>p')[0] as HTMLElement, prompt);
+                }
+                resolve();
+            }, opInterval / 2);
         }, opInterval);
     });
 };
@@ -81,10 +96,14 @@ const insertUndesiredContent = async (uprompt: string) => {
                 Prompt_button.click();
             }
             setTimeout(() => {
-                _setReactNativeValue(document.querySelector("textarea[placeholder='Write what you want removed from the generation.']")!, uprompt);
-            }, opInterval);
-
-            resolve();
+                const target = document.querySelectorAll('div[contenteditable]>p') as NodeListOf<HTMLElement>;
+                if (target.length == 2) {
+                    __setDivPvalue(target[0], uprompt);
+                } else {
+                    __setDivPvalue(target[1], uprompt);
+                }
+                resolve();
+            }, opInterval / 2);
         }, opInterval);
     });
 };
