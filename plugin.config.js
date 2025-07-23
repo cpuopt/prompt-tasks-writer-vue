@@ -3,7 +3,7 @@ const pluginConfig = {
     userscript: {
         icon: 'https://www.google.com/s2/favicons?sz=64&domain=novelai.net',
         namespace: 'https://www.cpufan.top/index.php/2024/03/18/novelai-prompts-task-writer/',
-        version: '0.0.2.250108',
+        version: '0.0.2.250723',
         match: ['https://novelai.net/image'],
         author: 'cpuopt',
         description: {

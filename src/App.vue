@@ -1593,7 +1593,7 @@ const runTaskList = async () => {
 
   button_observer = new Button_observer();
   class FetchInterceptor {
-    static originalFetch = unsafeWindow.fetch;
+    static originalFetch = unsafeWindow.fetch.bind(window);
 
     static intercept() {
       if (intercepted == false) {
