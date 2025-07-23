@@ -1593,7 +1593,7 @@ const runTaskList = async () => {
 
   button_observer = new Button_observer();
   class FetchInterceptor {
-    static originalFetch = unsafeWindow.fetch.bind(window);
+    static originalFetch = unsafeWindow.fetch.bind(unsafeWindow);
 
     static intercept() {
       if (intercepted == false) {
@@ -1611,7 +1611,7 @@ const runTaskList = async () => {
           }
           let response;
           try {
-            response = await this.originalFetch(resource, config);
+            response = await this.originalFetch.call(unsafeWindow, resource, config);
             if (
               /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource) &&
               progress.start &&
@@ -1632,6 +1632,19 @@ const runTaskList = async () => {
                   `generate-image请求过于频繁，将暂停30秒后重复请求 code: ${response.status}`,
                   "Error",
                   `响应失败，请求过于频繁，将暂停30秒后重复请求`,
+                  "error",
+                  25
+                );
+                GENERATING.REQUIESTING = false;
+                GENERATING.WAITING = true;
+                setTimeout(() => {
+                  GENERATING.WAITING = false;
+                }, 30000);
+              }else if(response.status == 403) {
+                ELMess(
+                  `generate-image请求被阻止，请尝试更换网络环境后重试 code: ${response.status}`,
+                  "Error",
+                  `响应失败，请求被阻止，请尝试更换网络环境后重试，将暂停30秒后重复请求`,
                   "error",
                   25
                 );
