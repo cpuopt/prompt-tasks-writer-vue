@@ -6,7 +6,7 @@ const opInterval = 100;
  * @description 点击生成按钮
  * @returns
  */
-var click_generate = () => {
+const click_generate = () => {
     return new Promise((resolve) => {
         setTimeout(() => {
             document.evaluate("//span[contains(text(),'Generate ') and contains(text(),' Image')]/..", document.body, null, 9, null).singleNodeValue.click();
@@ -206,6 +206,7 @@ const generate_promptList = (tasklist) => {
             finpromptGroupList.push({
                 prompt: element[0],
                 uprompt: element[1],
+                character: task.character.data ?? undefined,
                 size: element[2]
             });
         });
@@ -252,7 +253,7 @@ class PromptsBuilder {
             1: {
                 width: 832,
                 height: 1216
-            },
+            }
             // 2: {
             //     width: 832,
             //     height: 1216
@@ -291,6 +292,20 @@ class PromptsBuilder {
             },
             uprompts: {
                 data: [this.newPromptSplice()]
+            },
+            character: {
+                data: []
+            }
+        };
+    }
+    static newCharacter() {
+        return {
+            uuid: uuidv4(),
+            prompts: {
+                data: ''
+            },
+            uprompts: {
+                data: ''
             }
         };
     }
@@ -338,4 +353,4 @@ class PromptsBuilder {
         }
     }
 }
-export { removechild, Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num };
+export { removechild, Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, click_generate };
