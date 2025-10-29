@@ -31,5 +31,5 @@ jobs:
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
               with:
-                name: prompt-tasks-writer-vue-${{ github.sha }}.zip
-                path: ./dist/prompt-tasks-writer-vue.user.js
+                  name: prompt-tasks-writer-vue-${{ github.sha }}.zip
+                  path: ./dist/prompt-tasks-writer-vue.user.js

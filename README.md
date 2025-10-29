@@ -1,4 +1,5 @@
 # prompt-tasks-writer-vue
+
 NovelAI绘图任务队列生成器
 
 An tampermonkey script written in Vue 3, used to automate custom drawing tasks on novelai.net/image.
@@ -10,4 +11,3 @@ An tampermonkey script written in Vue 3, used to automate custom drawing tasks o
 View the latest builds in [Action](https://github.com/cpuopt/prompt-tasks-writer-vue/actions).
 
 查看 [Action](https://github.com/cpuopt/prompt-tasks-writer-vue/actions) 中的最新构建
-
