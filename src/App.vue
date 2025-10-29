@@ -1230,7 +1230,7 @@ const runTaskList = async () => {
                     let [resource, config] = args;
                     // console.log(resource);
                     if (
-                        (/^https:\/\/image-[a-z]+\.novelai\.net\/ai\/generate-image-stream/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
+                        (/^https:\/\/[^\/]+\.novelai\.net\/ai\/generate-image(-stream)?/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
                         progress.start &&
                         config.method == 'POST'
                     ) {
@@ -1242,7 +1242,7 @@ const runTaskList = async () => {
                     try {
                         response = await this.originalFetch.call(unsafeWindow, resource, config);
                         if (
-                            (/^https:\/\/image-[a-z]+\.novelai\.net\/ai\/generate-image-stream/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
+                            (/^https:\/\/[^\/]+\.novelai\.net\/ai\/generate-image(-stream)?/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
                             progress.start &&
                             config.method == 'POST'
                         ) {
@@ -1519,10 +1519,7 @@ const canvasOb = new InpaintObserver();
 }
 
 .pluginPanel {
-    box-shadow:
-        0px 16px 48px 16px rgba(64, 158, 255, 0.3),
-        0px 12px 32px rgba(64, 158, 255, 0.5),
-        0px 8px 16px -8px rgba(64, 158, 255, 0.8);
+    box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3), 0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
     border: var(--el-border-radius-round);
     position: fixed;
     top: 4vh;
@@ -1544,10 +1541,7 @@ const canvasOb = new InpaintObserver();
 
 @media screen and (max-width: 700px) {
     .pluginPanel {
-        box-shadow:
-            0px 16px 48px 16px rgba(64, 158, 255, 0.3),
-            0px 12px 32px rgba(64, 158, 255, 0.5),
-            0px 8px 16px -8px rgba(64, 158, 255, 0.8);
+        box-shadow: 0px 16px 48px 16px rgba(64, 158, 255, 0.3), 0px 12px 32px rgba(64, 158, 255, 0.5), 0px 8px 16px -8px rgba(64, 158, 255, 0.8);
         border: var(--el-border-radius-round);
         position: fixed;
         top: 4vh;
@@ -1564,9 +1558,7 @@ const canvasOb = new InpaintObserver();
 .plugin-switch {
     height: 30px;
     width: 30px;
-    transition:
-        background-color 0.2s ease,
-        border-color 1s ease;
+    transition: background-color 0.2s ease, border-color 1s ease;
 }
 
 .plugin-switch:hover {
