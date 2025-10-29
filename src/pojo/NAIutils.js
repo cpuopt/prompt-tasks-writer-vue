@@ -101,9 +101,11 @@ const count_task_prompts_num = (task) => {
 /**
  * @description 生成提示词列表
  * @param {*} tasklist
+ * @param {boolean} character 是否启用角色提示词
  * @returns
  */
-const generate_promptList = (tasklist) => {
+const generate_promptList = (tasklist, character = false) => {
+    console.log(tasklist)
     let TaskpromptGroupList = [];
 
     tasklist = tasklist.filter((task) => {
@@ -206,7 +208,7 @@ const generate_promptList = (tasklist) => {
             finpromptGroupList.push({
                 prompt: element[0],
                 uprompt: element[1],
-                character: task.character.data ?? undefined,
+                character: character ? task.character.data ?? undefined : undefined,
                 size: element[2]
             });
         });
