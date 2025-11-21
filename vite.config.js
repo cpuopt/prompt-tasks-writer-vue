@@ -8,6 +8,10 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import obfuscator from 'rollup-plugin-obfuscator';
 import pluginConfig from './plugin.config.js';
 import path from 'path';
+
+const baseName = `prompt-tasks-writer-vue-${pluginConfig.userscript.version.split('.').pop()}.user.js`;
+
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -25,7 +29,8 @@ export default defineConfig({
             build: {
                 externalGlobals: {
                     vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js')
-                }
+                },
+                fileName: baseName,
             }
         })
     ],

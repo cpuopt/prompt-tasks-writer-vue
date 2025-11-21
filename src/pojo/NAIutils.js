@@ -71,33 +71,119 @@ const deconstructDoubleLayerUUIDList = (doubleLayerUUIDList) => {
 };
 
 /**
- * @description 计算一个任务最少出多少张图可以覆盖全部的可能性
- * @param {*} task
+ * @description 计算一个任务产生多少种全局提示词可能性（角色不影响）
  */
 const count_task_prompts_num = (task) => {
     let prompts_num = 1;
+
     if (task.prompts.splice) {
         task.prompts.data
-            .filter((prompt_group) => prompt_group.ignore !== true) // 过滤未启用的提示词组
-            .forEach((prompt_group) => {
-                const prompts = prompt_group.data.filter((prompt) => prompt.ignore != true);
-                const choices = prompt_group.choices;
-                switch (prompt_group.type) {
-                    case 'permutation':
-                        prompts_num = prompts_num * StatisticsUtil.permutationNum(choices, prompts.length);
-                        break;
-                    case 'combination':
-                        prompts_num = prompts_num * StatisticsUtil.combinationNum(choices, prompts.length);
-                        break;
+            .filter(g => !g.ignore)
+            .forEach(g => {
+                const arr = g.data.filter(i => !i.ignore);
+                const k = g.choices;
+
+                if (g.type === "permutation") {
+                    prompts_num *= Number(StatisticsUtil.permutationNum(k, arr.length));
+                } else {
+                    prompts_num *= Number(StatisticsUtil.combinationNum(k, arr.length));
                 }
             });
     } else {
         prompts_num = task.prompts.data.length;
     }
 
-    const uprompts_num = task.uprompts.data.length;
-    return prompts_num * uprompts_num;
+    return prompts_num * task.uprompts.data.length;
 };
+
+
+/**
+ * @description 计算单个角色的正向提示词总可能数
+ * @param {*} charItem  (task.character.data[i])
+ */
+export const count_character_variants = (charItem) => {
+    const groups = charItem.prompts.data.filter(g => !g.ignore);
+
+    let maxCount = 1;
+
+    groups.forEach(group => {
+        const arr = group.data.filter(i => !i.ignore);
+        const m = arr.length;
+        const k = group.choices;
+
+        let count = 1;
+
+        if (group.type === "permutation") {
+            count = Number(StatisticsUtil.permutationNum(k, m));
+        } else {
+            count = Number(StatisticsUtil.combinationNum(k, m));
+        }
+
+        // 角色组与组之间拼接，不组合，用最大的作为总数
+        if (count > maxCount) maxCount = count;
+    });
+
+    return maxCount;
+};
+
+
+/**
+ * @description 角色提示词：每个角色生成 N 条正向/反向组合（行对齐）
+ * @param {*} task
+ * @param {*} need (task.nums)
+ */
+const generateCharacterVariants = (task, need) => {
+    const result = [];
+
+    task.character.data.forEach(charItem => {
+
+        // --- 正向提示词 ---
+        const promptGroups = charItem.prompts.data.filter(g => g.ignore !== true);
+
+        const groupsVariants = [];
+
+        promptGroups.forEach(group => {
+            const arr = deconstructUUIDList(group.data.filter(i => !i.ignore));
+            const k = group.choices;
+
+            let list;
+
+            if (group.type === "permutation") {
+                list = charItem.prompts.random
+                    ? StatisticsUtil.randomNPermutations(arr, k, need)
+                    : StatisticsUtil.firstNPermutations(arr, k, need);
+            } else {
+                list = charItem.prompts.random
+                    ? StatisticsUtil.randomNCombinations(arr, k, need)
+                    : StatisticsUtil.firstNCombinations(arr, k, need);
+            }
+
+            groupsVariants.push(list.map(x => x.join(",")));
+        });
+
+        // --- 将所有组进行拼接（不做组合）---
+        const pos = [];
+        for (let i = 0; i < need; i++) {
+            const line = groupsVariants.map(g => g[i % g.length]).join(",");
+            pos.push(line);
+        }
+
+        // --- 反向提示词（固定一条） ---
+        const negArr = deconstructUUIDList(charItem.uprompts.data.filter(i => !i.ignore));
+        const neg = negArr[0] ?? "";
+
+        // --- 存入角色结果 ---
+        result.push({
+            uuid: charItem.uuid,
+            pos,    // N 条
+            neg     // 固定一条
+        });
+    });
+
+    return result;
+};
+
+
 /**
  * @description 生成提示词列表
  * @param {*} tasklist
@@ -105,120 +191,87 @@ const count_task_prompts_num = (task) => {
  * @returns
  */
 const generate_promptList = (tasklist, character = false) => {
-    console.log(tasklist)
     let TaskpromptGroupList = [];
 
-    tasklist = tasklist.filter((task) => {
-        return task.activate == true;
-    });
+    tasklist = tasklist.filter(task => task.activate === true);
 
-    tasklist.forEach((task) => {
-        let promptGroupList = [];
+    tasklist.forEach(task => {
 
-        // 完整正向提示词列表
-        let ppromptList = ((prompts) => {
+        const need = task.nums;
+
+        //------------ 全局正向提示词 ------------
+        const ppromptList = (() => {
+            const prompts = task.prompts;
             let li = [];
-            let need = task.nums;
-            const prompts_random = prompts.random;
+
             if (prompts.splice) {
-                const prompt_groups_tags = [];
+                const groups = [];
                 prompts.data
-                    .filter((prompt_group) => prompt_group.ignore !== true) // 过滤未启用的提示词组
-                    .forEach((prompt_group) => {
-                        const prompts = prompt_group.data.filter((prompt) => prompt.ignore != true);
-                        const choices = prompt_group.choices;
+                    .filter(g => !g.ignore)
+                    .forEach(g => {
+                        const arr = deconstructUUIDList(g.data.filter(i => !i.ignore));
+                        const k = g.choices;
 
-                        switch (prompt_group.type) {
-                            case 'permutation':
-                                let permutation_choice_list;
-                                if (prompts_random) {
-                                    permutation_choice_list = StatisticsUtil.randomNPermutations(deconstructUUIDList(prompts), choices, need);
-                                } else {
-                                    permutation_choice_list = StatisticsUtil.firstNPermutations(deconstructUUIDList(prompts), choices, need);
-                                }
-                                for (let index = 0; index < permutation_choice_list.length; index++) {
-                                    permutation_choice_list[index] = permutation_choice_list[index].join(',');
-                                }
-                                prompt_groups_tags.push(permutation_choice_list);
-                                break;
+                        let list;
 
-                            case 'combination':
-                                let combination_choice_list;
-                                if (prompts_random) {
-                                    combination_choice_list = StatisticsUtil.randomNCombinations(deconstructUUIDList(prompts), choices, need);
-                                } else {
-                                    combination_choice_list = StatisticsUtil.firstNCombinations(deconstructUUIDList(prompts), choices, need);
-                                }
-                                for (let index = 0; index < combination_choice_list.length; index++) {
-                                    combination_choice_list[index] = combination_choice_list[index].join(',');
-                                }
-                                prompt_groups_tags.push(combination_choice_list);
-                                break;
+                        if (g.type === "permutation") {
+                            list = prompts.random
+                                ? StatisticsUtil.randomNPermutations(arr, k, need)
+                                : StatisticsUtil.firstNPermutations(arr, k, need);
+                        } else {
+                            list = prompts.random
+                                ? StatisticsUtil.randomNCombinations(arr, k, need)
+                                : StatisticsUtil.firstNCombinations(arr, k, need);
                         }
+
+                        groups.push(list.map(x => x.join(",")));
                     });
-                // 正向提示词随机处理
-                if (prompts.random) {
-                    StatisticsUtil.randomCartesianProduct(prompt_groups_tags, need).forEach((element) => {
-                        li.push(element.join(','));
-                    });
-                } else {
-                    StatisticsUtil.getFirstNCartesianProduct(prompt_groups_tags, need).forEach((element) => {
-                        li.push(element.join(','));
-                    });
+
+                for (let i = 0; i < need; i++) {
+                    const line = groups.map(g => g[i % g.length]).join(",");
+                    li.push(line);
                 }
             } else {
                 li = deconstructUUIDList(prompts.data);
             }
 
             return li;
-        })(task.prompts);
+        })();
 
-        // 完整反向提示词列表
-        let upromptList = deconstructUUIDList(task.uprompts.data);
-
-        if (task.random) {
-            promptGroupList = promptGroupList.concat(StatisticsUtil.randomCartesianProduct([ppromptList, upromptList, [task.size]], task.nums));
-            let pex = task.nums - promptGroupList.length;
-            if (pex <= 0) {
-                promptGroupList = promptGroupList.slice(0, task.nums);
-            } else {
-                let temp = [];
-                for (let index = 0; index < task.nums; index++) {
-                    temp.push(randomChild(promptGroupList));
-                }
-                promptGroupList = temp;
-            }
-        } else {
-            promptGroupList = promptGroupList.concat(StatisticsUtil.getFirstNCartesianProduct([ppromptList, upromptList, [task.size]], task.nums));
-            let pex = task.nums - promptGroupList.length;
-            if (pex <= 0) {
-                promptGroupList = promptGroupList.slice(0, task.nums);
-            } else {
-                let promptGroupListRaw = promptGroupList.concat();
-                let r = Math.floor(pex / promptGroupList.length);
-                let p = pex % promptGroupList.length;
-                for (let index = 0; index < r; index++) {
-                    promptGroupList = promptGroupList.concat(promptGroupListRaw);
-                }
-                promptGroupList = promptGroupList.concat(promptGroupListRaw.slice(0, p));
-            }
+        //------------ 全局反向提示词（简单） ------------
+        const upromptSrc = deconstructUUIDList(task.uprompts.data);
+        const upromptList = [];
+        for (let i = 0; i < need; i++) {
+            upromptList.push(upromptSrc[i % upromptSrc.length]);
         }
-        let finpromptGroupList = [];
-        promptGroupList.forEach((element) => {
-            finpromptGroupList.push({
-                prompt: element[0],
-                uprompt: element[1],
-                character: character ? task.character.data ?? undefined : undefined,
-                size: element[2]
-            });
-        });
 
-        TaskpromptGroupList = TaskpromptGroupList.concat(finpromptGroupList);
+        //------------ 角色提示词（行对齐构造） ------------
+        const charVariants = character ? generateCharacterVariants(task, need) : [];
+
+        //------------ 最终拼接（逐行） ------------
+        for (let i = 0; i < need; i++) {
+
+            const charactersForThisLine = charVariants.map(cv => {
+                return {
+                    uuid: cv.uuid,
+                    prompts: cv.pos[i],
+                    uprompts: cv.neg
+                };
+            });
+
+            TaskpromptGroupList.push({
+                prompt: ppromptList[i],
+                uprompt: upromptList[i],
+                character: character ? charactersForThisLine : undefined,
+                size: task.size
+            });
+        }
     });
 
     Debug(TaskpromptGroupList);
     return TaskpromptGroupList;
 };
+
 
 class PromptsBuilder {
     static newPromptSplice() {
@@ -296,7 +349,7 @@ class PromptsBuilder {
                 data: [this.newPromptSplice()]
             },
             character: {
-                data: []
+                data: [this.newCharacter()]
             }
         };
     }
@@ -304,10 +357,32 @@ class PromptsBuilder {
         return {
             uuid: uuidv4(),
             prompts: {
-                data: ''
+                random: false,
+                data: [
+                    {
+                        uuid: uuidv4(),
+                        type: "combination",
+                        choices: 1,
+                        ignore: false,
+                        color: "rgba(255,255,255,0.63)",
+                        data: [
+                            {
+                                uuid: uuidv4(),
+                                data: "",
+                                ignore: false
+                            }
+                        ]
+                    }
+                ]
             },
             uprompts: {
-                data: ''
+                data: [
+                    {
+                        uuid: uuidv4(),
+                        data: "",
+                        ignore: false
+                    }
+                ]
             }
         };
     }
@@ -355,4 +430,60 @@ class PromptsBuilder {
         }
     }
 }
+
+/**
+ * 251030 -> 升级
+ * @param {*} oldItem 
+ * @returns 
+ */
+export const upgradeCharacterItem = (oldItem) => {
+    if (!oldItem || !oldItem.prompts) return oldItem;
+
+    // 已经是新结构 → 跳过
+    if (Array.isArray(oldItem.prompts.data)) {
+        return oldItem;
+    }
+
+    // ---------------- 正向提示（保持整串） ----------------
+    const promptString = oldItem.prompts.data || "";
+
+    const newPrompts = {
+        random: false,
+        data: [
+            {
+                uuid: uuidv4(),
+                type: "combination",
+                choices: 1,
+                ignore: false,
+                color: "rgba(255,255,255,0.63)",
+                data: [
+                    {
+                        uuid: uuidv4(),
+                        data: promptString,
+                        ignore: false
+                    }
+                ]
+            }
+        ]
+    };
+
+    // ---------------- 负向提示（保持整串） ----------------
+    const upromptString = oldItem.uprompts?.data || "";
+
+    const newUprompts = {
+        data: [
+            {
+                uuid: uuidv4(),
+                data: upromptString,
+                ignore: false
+            }
+        ]
+    };
+
+    return {
+        uuid: oldItem.uuid,
+        prompts: newPrompts,
+        uprompts: newUprompts
+    };
+};
 export { removechild, Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, click_generate };

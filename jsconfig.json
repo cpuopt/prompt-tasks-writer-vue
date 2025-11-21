@@ -1,11 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "experimentalDecorators": true,
-        "baseUrl": "./",
-        "paths": {
-            "@/*": ["src/*"]
-        }
-    },
-    "exclude": ["node_modules", "dist"]
+  "compilerOptions": {
+    "checkJs": false,
+    "target": "ES2020",
+
+    // TypeScript 6 正确组合
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
 }

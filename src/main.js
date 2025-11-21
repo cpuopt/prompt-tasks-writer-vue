@@ -3,6 +3,7 @@ import 'hacktimer';
 import '@/style.css';
 import App from '@/App.vue';
 import { unsafeWindow } from '$';
+import { createPinia } from 'pinia';
 
 // import 'default-passive-events'
 
@@ -11,6 +12,11 @@ unsafeWindow.confirm = function () {
 };
 
 const appp = createApp(App);
+appp.config.devtools = true
+
+const pinia = createPinia()
+appp.use(pinia)
+
 appp.directive('hide', (el, binding) => {
     const isHide = binding.value;
     el.style.visibility = isHide ? 'hidden' : 'visible';
