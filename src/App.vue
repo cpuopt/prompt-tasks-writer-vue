@@ -1509,9 +1509,12 @@ const canvasOb = new InpaintObserver();
     top: 0;
     position: absolute;
     flex-direction: column;
-    flex-wrap: wrap;
-    max-height: 100%;
-    align-items: end;
+
+    &[column] {
+    }
+    &[row] {
+      flex-direction: row-reverse;
+    }
 
     button {
       width: 24px !important;
