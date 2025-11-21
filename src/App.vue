@@ -1511,6 +1511,12 @@ const canvasOb = new InpaintObserver();
     flex-direction: column;
     flex-wrap: wrap;
     max-height: 100%;
+    align-items: end;
+
+    button {
+      width: 24px !important;
+      margin: 0 !important;
+    }
   }
 
   .button-small-square {
