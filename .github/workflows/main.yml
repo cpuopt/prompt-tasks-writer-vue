@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,8 +27,15 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Find built userscript file
+        id: find_file
+        run: |
+          FILE=$(ls dist/*.user.js)
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+          echo "Found file: $FILE"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: prompt-tasks-writer-vue-${{ github.sha }}.zip
-          path: ./dist/prompt-tasks-writer-vue.user.js
+          path: ${{ steps.find_file.outputs.file }}
