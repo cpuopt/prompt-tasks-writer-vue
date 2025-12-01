@@ -1093,6 +1093,8 @@ const ELMess = (debugLog, title, message, type, duration, dangerouslyUseHTMLStri
 const generate_button = () => {
   return document.evaluate(`//span[text()='Generate 1 Image']/following-sibling::div[1]`, document.body, null, 7, null).snapshotItem(0);
 };
+
+const GENERATE_URLS = [/^https:\/\/[^\/]+\.novelai\.net\/ai\/generate-image(-stream)?/, /https:\/\/image.novelai.net\/ai\/generate-image/];
 let intercepted = false;
 let button_observer;
 const runTaskList = async () => {
@@ -1137,11 +1139,7 @@ const runTaskList = async () => {
         unsafeWindow.fetch = async (...args) => {
           let [resource, config] = args;
           // console.log(resource);
-          if (
-            (/^https:\/\/[^\/]+\.novelai\.net\/ai\/generate-image(-stream)?/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
-            progress.start &&
-            config.method == 'POST'
-          ) {
+          if (GENERATE_URLS.some((reg) => reg.test(resource)) && progress.start && config.method == 'POST') {
             ELMess('generate-image请求发送', 'Info', '生成请求已发送', 'info');
             button_observer.connect();
             piniaStorage.GENERATING.REQUIESTING = true;
@@ -1149,11 +1147,7 @@ const runTaskList = async () => {
           let response;
           try {
             response = await this.originalFetch.call(unsafeWindow, resource, config);
-            if (
-              (/^https:\/\/[^\/]+\.novelai\.net\/ai\/generate-image(-stream)?/.test(resource) || /https:\/\/image.novelai.net\/ai\/generate-image/.test(resource)) &&
-              progress.start &&
-              config.method == 'POST'
-            ) {
+            if (GENERATE_URLS.some((reg) => reg.test(resource)) && progress.start && config.method == 'POST') {
               if (response.status == 200) {
                 ELMess(`generate-image响应成功 code: ${response.status}`, 'Success', '生成图像成功', 'success');
                 progress.now += 1;
