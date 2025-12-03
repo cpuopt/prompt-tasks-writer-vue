@@ -30,7 +30,7 @@
         "eslint-plugin-n": "^17.23.1",
         "eslint-plugin-promise": "^7.2.1",
         "eslint-plugin-vue": "^10.5.1",
-        "javascript-obfuscator": "^4.1.1",
+        "javascript-obfuscator": "^4.2.0",
         "rollup-plugin-obfuscator": "^1.1.0",
         "sass": "^1.94.2",
         "unplugin-auto-import": "^20.2.0",
