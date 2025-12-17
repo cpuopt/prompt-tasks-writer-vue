@@ -104,7 +104,7 @@ const count_task_prompts_num = (task) => {
 export const count_character_variants = (charItem) => {
     const groups = charItem.prompts.data.filter(g => !g.ignore);
 
-    let maxCount = 1;
+    let total = 1;
 
     groups.forEach(group => {
         const arr = group.data.filter(i => !i.ignore);
@@ -119,11 +119,10 @@ export const count_character_variants = (charItem) => {
             count = Number(StatisticsUtil.combinationNum(k, m));
         }
 
-        // 角色组与组之间拼接，不组合，用最大的作为总数
-        if (count > maxCount) maxCount = count;
+        total *= count;
     });
 
-    return maxCount;
+    return total;
 };
 
 
@@ -161,12 +160,12 @@ const generateCharacterVariants = (task, need) => {
             groupsVariants.push(list.map(x => x.join(",")));
         });
 
-        // --- 将所有组进行拼接（不做组合）---
-        const pos = [];
-        for (let i = 0; i < need; i++) {
-            const line = groupsVariants.map(g => g[i % g.length]).join(",");
-            pos.push(line);
-        }
+        // --- 将所有组进行笛卡尔积 ---
+        const product = charItem.prompts.random
+            ? StatisticsUtil.randomCartesianProduct(groupsVariants, need)
+            : StatisticsUtil.getFirstNCartesianProduct(groupsVariants, need);
+
+        const pos = product.map(p => p.join(","));
 
         // --- 反向提示词（固定一条） ---
         const negArr = deconstructUUIDList(charItem.uprompts.data.filter(i => !i.ignore));
@@ -200,43 +199,54 @@ const generate_promptList = (tasklist, character = false) => {
         const need = task.nums;
 
         //------------ 全局正向提示词 ------------
-        const ppromptList = (() => {
-            const prompts = task.prompts;
+        let ppromptList = ((prompts) => {
             let li = [];
+            let need = task.nums;
+            const prompts_random = prompts.random;
 
             if (prompts.splice) {
-                const groups = [];
+                const prompt_groups_tags = [];
+
                 prompts.data
-                    .filter(g => !g.ignore)
-                    .forEach(g => {
-                        const arr = deconstructUUIDList(g.data.filter(i => !i.ignore));
-                        const k = g.choices;
+                    .filter(pg => pg.ignore !== true)
+                    .forEach(prompt_group => {
+                        const items = prompt_group.data
+                            .filter(p => p.ignore !== true)
+                            .map(p => p.data);
 
-                        let list;
+                        const choices = prompt_group.choices;
 
-                        if (g.type === "permutation") {
-                            list = prompts.random
-                                ? StatisticsUtil.randomNPermutations(arr, k, need)
-                                : StatisticsUtil.firstNPermutations(arr, k, need);
+                        let groupVariants;
+
+                        if (prompt_group.type === 'permutation') {
+                            groupVariants = prompts_random
+                                ? StatisticsUtil.randomNPermutations(items, choices, need)
+                                : StatisticsUtil.firstNPermutations(items, choices, need);
                         } else {
-                            list = prompts.random
-                                ? StatisticsUtil.randomNCombinations(arr, k, need)
-                                : StatisticsUtil.firstNCombinations(arr, k, need);
+                            groupVariants = prompts_random
+                                ? StatisticsUtil.randomNCombinations(items, choices, need)
+                                : StatisticsUtil.firstNCombinations(items, choices, need);
                         }
 
-                        groups.push(list.map(x => x.join(",")));
+                        // 组内拼接
+                        prompt_groups_tags.push(
+                            groupVariants.map(arr => arr.join(','))
+                        );
                     });
 
-                for (let i = 0; i < need; i++) {
-                    const line = groups.map(g => g[i % g.length]).join(",");
-                    li.push(line);
-                }
+                // 这里必须是 Cartesian Product
+                const product = prompts_random
+                    ? StatisticsUtil.randomCartesianProduct(prompt_groups_tags, need)
+                    : StatisticsUtil.getFirstNCartesianProduct(prompt_groups_tags, need);
+
+                li = product.map(p => p.join(','));
             } else {
-                li = deconstructUUIDList(prompts.data);
+                li = prompts.data.map(p => p.data);
             }
 
             return li;
-        })();
+        })(task.prompts);
+
 
         //------------ 全局反向提示词（简单） ------------
         const upromptSrc = deconstructUUIDList(task.uprompts.data);
@@ -254,13 +264,13 @@ const generate_promptList = (tasklist, character = false) => {
             const charactersForThisLine = charVariants.map(cv => {
                 return {
                     uuid: cv.uuid,
-                    prompts: cv.pos[i],
+                    prompts: cv.pos[i % cv.pos.length],
                     uprompts: cv.neg
                 };
             });
 
             TaskpromptGroupList.push({
-                prompt: ppromptList[i],
+                prompt: ppromptList[i % ppromptList.length],
                 uprompt: upromptList[i],
                 character: character ? charactersForThisLine : undefined,
                 size: task.size
