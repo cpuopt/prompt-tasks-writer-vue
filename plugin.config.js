@@ -1,9 +1,13 @@
 const pluginConfig = {
     name: 'NovelAI绘图任务队列生成器',
+    features: {
+        // 发布打包时设为 false；需要在页面内调试 NovelPageUtil 时改为 true。
+        showNovelPageTestButton: false
+    },
     userscript: {
         icon: 'https://www.google.com/s2/favicons?sz=64&domain=novelai.net',
         namespace: 'https://www.xfan.top/index.php/2024/03/18/novelai-prompts-task-writer/',
-        version: '0.0.3.251217',
+        version: '0.0.4.20260822',
         match: ['https://novelai.net/image'],
         author: 'cpuopt',
         description: {

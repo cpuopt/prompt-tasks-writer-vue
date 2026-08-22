@@ -71,6 +71,15 @@
             >{{ pluginConfig.name }} v{{ pluginConfig.userscript.version }}</el-text
           >
           <div class="flex-grow"></div>
+          <el-tooltip v-if="pluginConfig.features?.showNovelPageTestButton" effect="dark" content="测试页面接口（结果输出到 Console）" placement="bottom">
+            <el-button
+              plain
+              :icon="Operation"
+              :loading="NOVEL_PAGE_TEST_RUNNING"
+              @click="runNovelPageUtilTests()"
+              :style="{ height: '30px', width: '30px', marginInline: '0.5rem' }"
+            />
+          </el-tooltip>
           <el-icon style="cursor: pointer; margin-inline: 0.5rem" color="#a6a9ad80" size="20" @click="showTour()">
             <QuestionFilled />
           </el-icon>
@@ -675,7 +684,7 @@ import { QuestionFilled } from '@element-plus/icons-vue';
 
 import AddArea from './components/AddArea.vue';
 import PromptInput from './components/PromptInput.vue';
-import { CopyDocument, Odometer, EditPen, Close, Check, CloseBold, ArrowDownBold, Delete, DCaret, Edit, Select, Hide, FolderOpened } from '@element-plus/icons-vue';
+import { CopyDocument, Odometer, EditPen, Close, Check, CloseBold, ArrowDownBold, Delete, DCaret, Edit, Select, Hide, FolderOpened, Operation } from '@element-plus/icons-vue';
 import { ElDivider } from 'element-plus';
 import DeleteButton from '@/components/DeleteButton.vue';
 import DeleteTask from '@/components/DeleteTask.vue';
@@ -686,6 +695,7 @@ import ConfirmButton from '@/components/ConfirmButton.vue';
 import { h, ref, reactive, toRaw, watch, onMounted, onUnmounted, computed } from 'vue';
 import { Debug, insert, generate_promptList, timeFormat, PromptsBuilder, count_task_prompts_num, removechild, click_generate, upgradeCharacterItem } from '@/pojo/NAIutils.js';
 import { setImageSettingSize, clickDownloadZIPButton, setCharacterPrompts } from '@/pojo/NovelPageUtil.ts';
+import { NovelPageUtilTest } from '@/pojo/NovelPageUtilTest.ts';
 import { unsafeWindow } from '$';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
@@ -704,6 +714,16 @@ const TasksScrollbarRef = ref();
 const IMPORTMASK_SHOW = ref(false);
 const CONFIG_SHOW = ref(true);
 const TOUR = ref(false);
+const NOVEL_PAGE_TEST_RUNNING = ref(false);
+const runNovelPageUtilTests = async () => {
+  if (NOVEL_PAGE_TEST_RUNNING.value) return;
+  NOVEL_PAGE_TEST_RUNNING.value = true;
+  try {
+    await NovelPageUtilTest.run();
+  } finally {
+    NOVEL_PAGE_TEST_RUNNING.value = false;
+  }
+};
 const showTour = () => {
   CONFIG_SHOW.value = true;
   piniaStorage.tasklist.tasks[0].fold = false;
